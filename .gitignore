@@ -1,0 +1,24 @@
+# Build outputs and local worktrees
+**/bin/
+**/obj/
+artifacts/
+TestResults/
+.worktree/
+.worktrees/
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+# Local configuration and signing material
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.keystore
+*.jks

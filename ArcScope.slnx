@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
+    <Project Path="src/ArcForges.ArcScope/ArcForges.ArcScope.csproj" />
+  </Folder>
+  <Folder Name="/tests/"><Project Path="tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj" /></Folder>
+  <Folder Name="/eng/"><Project Path="eng/ArcForges.Repository/ArcForges.Repository.csproj" /></Folder>
+</Solution>

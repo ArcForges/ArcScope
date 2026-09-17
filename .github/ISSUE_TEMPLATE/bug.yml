@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible application or build failure
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version and platform
+      description: Include the release/commit and OS/architecture.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction, expected behavior and actual result
+      description: Do not include credentials or private names/logs.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Relevant diagnostics
+      description: Include sanitized errors or a CI link.

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Web" />
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
+    <ProjectReference Include="../../eng/ArcForges.Repository/ArcForges.Repository.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,38 @@
+[
+  {
+    "Package": "Avalonia 12.1.2",
+    "File": "third-party/Avalonia.LICENSE.txt",
+    "Source": "https://github.com/AvaloniaUI/Avalonia/blob/d3c867a9e2de379249b03dbeb3495bd7f076a81a/licence.md",
+    "Sha256": "213814d306090074d234d760239ff0f67eb9b8d20eefb4d5631bb39dbe0b769b"
+  },
+  {
+    "Package": "MicroCom.Runtime 0.11.6",
+    "File": "third-party/MicroCom.LICENSE.txt",
+    "Source": "https://github.com/kekekeks/MicroCom/blob/76785efcafd91b5902fd19dd11145f6dd655b7b4/LICENSE",
+    "Sha256": "6ee769c9ac4dac9abb16b98b1341e9528ff9f4ab685481410d3376d14148f3a9"
+  },
+  {
+    "Package": "Tmds.DBus.Protocol 0.94.1",
+    "File": "third-party/Tmds.DBus.LICENSE.txt",
+    "Source": "https://github.com/tmds/Tmds.DBus/blob/b4a7fed0b878f74cb54f7cca84d2889af4e596ba/COPYING",
+    "Sha256": "aca3b49277abcc7886ccb2f115603a9f5b15fc3f96019a10c00f2974098b210c"
+  },
+  {
+    "Package": "gRPC for .NET 2.83.0",
+    "File": "third-party/gRPC.LICENSE.txt",
+    "Source": "https://github.com/grpc/grpc-dotnet/blob/4301104498e53898a452e8fb2fea6c0b1492b755/LICENSE",
+    "Sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "Package": "Google.Protobuf 3.36.1",
+    "File": "third-party/Protobuf.LICENSE.txt",
+    "Source": "https://github.com/protocolbuffers/protobuf/blob/f377bfefc5e2cfab68b816903c25b23e091c439d/LICENSE",
+    "Sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
+  },
+  {
+    "Package": ".NET / Microsoft.Extensions 10.0.12",
+    "File": "third-party/dotnet.LICENSE.txt",
+    "Source": "https://github.com/dotnet/dotnet/blob/95017c711e6afc1085133d440e42b4bd78155701/LICENSE.TXT",
+    "Sha256": "ae48df11a335dc1a615f4f938b69cba73bcf4485c4f97af49b38efb0f216353b"
+  }
+]
