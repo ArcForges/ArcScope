@@ -1,0 +1,13 @@
+name: Feature request
+description: Propose a bounded product improvement
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Problem and desired behavior
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and alternatives

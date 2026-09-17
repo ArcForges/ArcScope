@@ -1,0 +1,251 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "21 7 * * 2"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CI: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  native:
+    name: Native (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            rid: win-x64
+          - os: windows-11-arm
+            rid: win-arm64
+          - os: ubuntu-24.04
+            rid: linux-x64
+          - os: macos-15-intel
+            rid: osx-x64
+          - os: macos-15
+            rid: osx-arm64
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+      - name: Install Linux native prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang zlib1g-dev libx11-6 libice6 libsm6 libfontconfig1 xvfb fonts-dejavu-core
+      - run: dotnet restore ArcScope.slnx --locked-mode
+      - run: dotnet format ArcScope.slnx --verify-no-changes --no-restore
+      - run: dotnet build ArcScope.slnx -c Release --no-restore
+      - run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check
+      - name: Set immutable version
+        id: version
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
+      - name: Run deterministic tests
+        run: dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build
+      - name: Compile Native AOT executable
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+          TARGET_RID: ${{ matrix.rid }}
+        run: dotnet publish src/ArcForges.ArcScope/ArcForges.ArcScope.csproj -c Release -r "$TARGET_RID" --no-restore -p:Version="$PACKAGE_VERSION" -p:SourceRevisionId="$GITHUB_SHA" -o "artifacts/publish/$TARGET_RID"
+      - name: Stage complete portable directory
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+          TARGET_RID: ${{ matrix.rid }}
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- prepare "$TARGET_RID" "$PACKAGE_VERSION"
+      - name: Run native UI and live Cloud checks
+        env:
+          TARGET_RID: ${{ matrix.rid }}
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a dotnet run --project eng/ArcForges.Repository -c Release --no-build -- smoke "$TARGET_RID"
+          else
+            dotnet run --project eng/ArcForges.Repository -c Release --no-build -- smoke "$TARGET_RID"
+          fi
+      - name: Pack the verified native directory
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+          TARGET_RID: ${{ matrix.rid }}
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- pack "$TARGET_RID" "$PACKAGE_VERSION" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: arcscope-candidate-${{ matrix.rid }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/candidate/${{ matrix.rid }}/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: arcscope-evidence-${{ matrix.rid }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/evidence/
+            tests/**/TestResults/
+          if-no-files-found: warn
+          retention-days: 14
+
+  quality:
+    name: Workflow and secret checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Check workflow syntax
+        run: |
+          curl --fail --silent --show-error --location https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz --output "$RUNNER_TEMP/actionlint.tar.gz"
+          echo '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  '"$RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+      - name: Scan Git history for secrets
+        run: docker run --rm --network none -v "$PWD:/repo:ro" zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git /repo --redact=100 --no-banner
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
+        with:
+          fail-on-severity: high
+
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: csharp
+            build-mode: manual
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        if: matrix.language == 'csharp'
+        with:
+          global-json-file: global.json
+      - uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Build C# for analysis
+        if: matrix.language == 'csharp'
+        run: |
+          dotnet restore ArcScope.slnx --locked-mode
+          dotnet build ArcScope.slnx -c Release --no-restore -p:UseSharedCompilation=false
+      - uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
+        with:
+          category: /language:${{ matrix.language }}
+
+  verify:
+    name: Verify
+    if: always()
+    needs: [native, quality, dependency-review, codeql]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Require every applicable gate
+        env:
+          NATIVE: ${{ needs.native.result }}
+          QUALITY: ${{ needs.quality.result }}
+          DEPENDENCIES: ${{ needs.dependency-review.result }}
+          CODEQL: ${{ needs.codeql.result }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          test "$NATIVE" = success
+          test "$QUALITY" = success
+          test "$CODEQL" = success
+          if [ "$EVENT" = pull_request ]; then test "$DEPENDENCIES" = success; else test "$DEPENDENCIES" = skipped; fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: arcscope-candidate-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/download
+      - run: dotnet restore eng/ArcForges.Repository --locked-mode
+      - run: dotnet build eng/ArcForges.Repository -c Release --no-restore
+      - id: version
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
+      - name: Rehearse the complete release verification before merge
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify artifacts/download "$PACKAGE_VERSION" "$GITHUB_SHA"
+
+  release:
+    name: Publish portable release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: arcscope-candidate-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/download
+      - run: dotnet restore eng/ArcForges.Repository --locked-mode
+      - run: dotnet build eng/ArcForges.Repository -c Release --no-restore
+      - id: version
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
+      - name: Verify immutable candidates
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify artifacts/download "$PACKAGE_VERSION" "$GITHUB_SHA"
+      - name: Publish complete prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="v$PACKAGE_VERSION"
+          gh release create "$tag" --target "$GITHUB_SHA" --title "ArcScope $PACKAGE_VERSION" --draft --prerelease --notes-file docs/release-notes.md
+          mapfile -d '' assets < <(find artifacts/download -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.sha256' \) -print0)
+          test "${#assets[@]}" = 10
+          gh release upload "$tag" "${assets[@]}"
+          tar --exclude='*.zip' --exclude='*.tar.gz' --exclude='*.sha256' -czf artifacts/arcscope-verification.tar.gz -C artifacts/download .
+          gh release upload "$tag" artifacts/arcscope-verification.tar.gz
+          gh release edit "$tag" --draft=false --prerelease --latest=false

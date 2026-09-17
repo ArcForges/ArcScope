@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      avalonia:
+        patterns: ["Avalonia*", "SkiaSharp*", "HarfBuzzSharp*"]
+      grpc:
+        patterns: ["Grpc.*", "Google.Protobuf"]
+      dotnet:
+        patterns: ["Microsoft.*"]
+      tests:
+        patterns: ["xunit*"]
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
