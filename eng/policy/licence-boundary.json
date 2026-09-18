@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "repository": "ArcScope",
+  "spdxLicense": "AGPL-3.0-only",
+  "licenceBoundary": "AGPL",
+  "projects": [
+    {
+      "path": "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+      "kind": "msbuild"
+    },
+    {
+      "path": "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj",
+      "kind": "msbuild"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj",
+      "kind": "msbuild"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj",
+      "kind": "msbuild"
+    }
+  ]
+}

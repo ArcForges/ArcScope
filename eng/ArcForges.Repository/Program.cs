@@ -251,6 +251,19 @@ public static partial class Program
             }
         }
         Console.WriteLine("Repository text, structured inputs and whitespace checks passed.");
+        var projects = LicencePolicy.Validate(Directory.GetCurrentDirectory(), files);
+        Directory.CreateDirectory("artifacts/evidence");
+        await File.WriteAllTextAsync("artifacts/evidence/licence-boundary.json", JsonSerializer.Serialize(new
+        {
+            result = "passed",
+            repository = "ArcScope",
+            commit = (await Capture("git", ["rev-parse", "HEAD"])).Trim(),
+            dirty = (await Capture("git", ["status", "--porcelain"])).Trim().Length != 0,
+            spdxLicense = "AGPL-3.0-only",
+            licenceBoundary = "AGPL",
+            projects
+        }, Json));
+        Console.WriteLine($"Verified {projects.Length} project licence declarations and references.");
     }
 
     private static async Task<string> Capture(string command, string[] args)
