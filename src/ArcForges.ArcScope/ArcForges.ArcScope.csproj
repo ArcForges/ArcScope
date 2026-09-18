@@ -17,4 +17,8 @@
     <ProjectReference Include="../ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <AssemblyMetadata Include="SourceRevision" Value="$(SourceRevisionId)" />
   </ItemGroup>
+  <PropertyGroup>
+    <LicenceBoundary>AGPL</LicenceBoundary>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
 </Project>
