@@ -12,4 +12,12 @@ Download `arcscope-VERSION-RID.zip` or `.tar.gz` together with its `.sha256`. Ev
 
 The five candidates use native GitHub hosts, not cross-compilation as a substitute for execution. A live service outage blocks publication and preserves its error evidence. First release publication itself is verified only after the PR is merged; a green PR does not demonstrate a main-branch release has already occurred.
 
+Publication uses an explicit cancellation/status condition and requires `Verify`
+to succeed. The PR-only dependency-review job is intentionally skipped on main;
+GitHub's default ancestor-success condition must not suppress publication after
+the aggregate gate has accepted that applicable job set. A final main-only
+`Verify publication` job fails when publishing fails or is unexpectedly skipped.
+This corrects the skipped publication observed during WP00.02 post-merge checks.
+See the [GitHub job-dependency rules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
+
 The current distributions are portable development builds. Authenticode, Developer ID/notarization, installers, app-store delivery and update signing require separate credentials and implementation before trusted public product distribution.
