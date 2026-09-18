@@ -210,7 +210,11 @@ jobs:
 
   release:
     name: Publish portable release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # The PR-only dependency review is skipped on main. Override the implicit
+    # ancestor success check while still requiring the complete Verify gate.
+    if: >-
+      !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      && needs.verify.result == 'success'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -249,3 +253,15 @@ jobs:
           tar --exclude='*.zip' --exclude='*.tar.gz' --exclude='*.sha256' -czf artifacts/arcscope-verification.tar.gz -C artifacts/download .
           gh release upload "$tag" artifacts/arcscope-verification.tar.gz
           gh release edit "$tag" --draft=false --prerelease --latest=false
+
+  verify-release:
+    name: Verify publication
+    needs: release
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require completed publication on main
+        env:
+          RELEASE_RESULT: ${{ needs.release.result }}
+        run: test "$RELEASE_RESULT" = success
