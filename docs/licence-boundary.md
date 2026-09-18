@@ -15,7 +15,7 @@ from the owner's SPDX declaration; the existing distribution notices are retaine
 `Directory.Build.targets` also checks effective MSBuild properties before build
 and pack, so an imported or command-line override cannot bypass source checks.
 The inventory test runs in every native CI job. It writes the source commit,
-dirty state, boundary and complete project list to
+dirty state, evaluated MSBuild declarations, reference edges and complete project list to
 `artifacts/evidence/licence-boundary.json`, retained with the existing UI evidence.
 Adversarial C# tests exercise declaration, inventory, import, reference and lock
 failures. The existing locked restore, format, build, tests, five-RID Native AOT

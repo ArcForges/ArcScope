@@ -252,6 +252,22 @@ public static partial class Program
         }
         Console.WriteLine("Repository text, structured inputs and whitespace checks passed.");
         var projects = LicencePolicy.Validate(Directory.GetCurrentDirectory(), files);
+        var evaluated = new List<object>();
+        foreach (var project in projects)
+        {
+            using var report = JsonDocument.Parse(await Capture("dotnet", ["msbuild", project,
+                "-t:ArcForgesVerifyLicenceBoundary", "-getProperty:PackageLicenseExpression,LicenceBoundary",
+                "-getItem:ProjectReference", "-verbosity:quiet"]));
+            var properties = report.RootElement.GetProperty("Properties");
+            evaluated.Add(new
+            {
+                path = project,
+                spdxLicense = properties.GetProperty("PackageLicenseExpression").GetString(),
+                licenceBoundary = properties.GetProperty("LicenceBoundary").GetString(),
+                projectReferences = report.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray()
+                    .Select(item => Path.GetRelativePath(Directory.GetCurrentDirectory(), item.GetProperty("FullPath").GetString()!).Replace('\\', '/')).ToArray()
+            });
+        }
         Directory.CreateDirectory("artifacts/evidence");
         await File.WriteAllTextAsync("artifacts/evidence/licence-boundary.json", JsonSerializer.Serialize(new
         {
@@ -261,7 +277,7 @@ public static partial class Program
             dirty = (await Capture("git", ["status", "--porcelain"])).Trim().Length != 0,
             spdxLicense = "AGPL-3.0-only",
             licenceBoundary = "AGPL",
-            projects
+            projects = evaluated
         }, Json));
         Console.WriteLine($"Verified {projects.Length} project licence declarations and references.");
     }
