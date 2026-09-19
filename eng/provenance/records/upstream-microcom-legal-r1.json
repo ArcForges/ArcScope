@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "upstream-microcom-legal-r1",
+  "kind": "legal-text",
+  "sourceRepository": "https://github.com/kekekeks/MicroCom",
+  "sourceCommit": "76785efcafd91b5902fd19dd11145f6dd655b7b4",
+  "sourcePaths": [
+    "LICENSE"
+  ],
+  "licence": {
+    "spdx": "MIT",
+    "category": "permissive",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "6ee769c9ac4dac9abb16b98b1341e9528ff9f4ab685481410d3376d14148f3a9",
+        "finding": "The retained file is the exact full governing legal text at the pinned source revision; byte comparison with the downloaded official source passed."
+      }
+    ],
+    "scope": "Retain the full legal document for MicroCom.Runtime 0.11.6; no implementation is imported under this legal-text record.",
+    "copyingPermission": "Verbatim reproduction of the licence/copyright document to fulfil the selected MIT redistribution notice terms; the complete permission and disclaimer are preserved."
+  },
+  "attribution": [
+    "Copyright (c) 2021 Nikita Tsukanov"
+  ],
+  "targets": [
+    {
+      "path": "third-party/MicroCom.LICENSE.txt",
+      "sha256": "6ee769c9ac4dac9abb16b98b1341e9528ff9f4ab685481410d3376d14148f3a9",
+      "normalization": "raw"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Copy",
+  "verification": {
+    "kind": "byte-match",
+    "command": "Compare third-party/MicroCom.LICENSE.txt with https://github.com/kekekeks/MicroCom/blob/76785efcafd91b5902fd19dd11145f6dd655b7b4/LICENSE and the fixed SHA-256; run the C# repository check.",
+    "expected": "Both raw SHA-256 values equal 6ee769c9ac4dac9abb16b98b1341e9528ff9f4ab685481410d3376d14148f3a9. The package retains the same full text under notices/upstream/.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright (c) 2021 Nikita Tsukanov\nRetain the complete licence, permissions and disclaimer in third-party/MicroCom.LICENSE.txt.",
+    "files": [
+      "third-party/MicroCom.LICENSE.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "packages",
+    "reason": "The original full root legal document and package-specific source summary accompany each portable archive."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Reviewed exact official legal text and recorded raw-byte comparison for the existing MicroCom.Runtime 0.11.6 dependency. This reconciles an existing retained document without claiming historical pre-copy approval or introducing its implementation.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": true
+  },
+  "supersedes": null
+}

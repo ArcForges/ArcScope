@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "arcnotes-provenance-tools-r1",
+  "kind": "source",
+  "sourceRepository": "https://github.com/ArcForges/ArcNotes",
+  "sourceCommit": "e40423a1b14ce8341de35748cc2a093c7c9b77a7",
+  "sourcePaths": [
+    "eng/ArcForges.Repository/ProvenancePolicy.cs",
+    "eng/ArcForges.Repository/Program.cs",
+    "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+    "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs"
+  ],
+  "licence": {
+    "spdx": "AGPL-3.0-only",
+    "category": "agpl-compatible",
+    "evidence": [
+      {
+        "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+        "sha256": "0da29d6f3cd9656640276d27eab25ee38fec68809d4dcc68ef3c1ad96ec1f3b9",
+        "finding": "The file declares AGPL-3.0-only. The checker also retains its original Apache source attribution; its full Apache legal companion is retained separately."
+      },
+      {
+        "path": "eng/ArcForges.Repository/Program.cs",
+        "sha256": "716c798d079e074415a7d5c07398b9876dd9b19de195475349f6d4bb69131ac2",
+        "finding": "The file declares AGPL-3.0-only. The checker also retains its original Apache source attribution; its full Apache legal companion is retained separately."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+        "sha256": "286437bd06ea7dd22e58f2007e2b75ab7aa4264595ff1d548b9953adeb6bca69",
+        "finding": "The file declares AGPL-3.0-only. The checker also retains its original Apache source attribution; its full Apache legal companion is retained separately."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs",
+        "sha256": "63342a622e37e4c82c3a8fd12f41a634c23a70e88222416a252e60d3cbbf24f4",
+        "finding": "The file declares AGPL-3.0-only. The checker also retains its original Apache source attribution; its full Apache legal companion is retained separately."
+      }
+    ],
+    "scope": "Reuse the current reviewed AGPL C# provenance/release tooling and tests from ArcNotes, changing only product identity literals. Preserve the original Apache checker attribution and full terms. Existing owner-specific behavior is protected by a byte comparison of the prior tools after the same identity transformation. No retired repository, sibling build reference or new runtime dependency is introduced.",
+    "copyingPermission": null
+  },
+  "attribution": [
+    "Copyright ArcForges contributors. Current C# tooling/tests: AGPL-3.0-only.",
+    "Original provenance checker from Contracts: Apache-2.0; full text in eng/third-party/LICENSE.Contracts.txt.",
+    "ArcScope adaptation changes product identity literals only; the current owner remains independently built."
+  ],
+  "targets": [
+    {
+      "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+      "sha256": "cb53d777f75ab803d3681f1b102cd0d9ae1a558202900f28ee79101eb34e5aea",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/Program.cs",
+      "sha256": "3ba34ba2c1246e939fcbbbf5a3b9c3fa4ceb6294c4687c492108d7c0c870791c",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/ProvenancePolicyTests.cs",
+      "sha256": "1772f9bcb9d0e681a979ae29437701478cdf706adaed66a2508bde5ac626f74a",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/CandidateTests.cs",
+      "sha256": "f3d19e7a5ab317c2aeb837317b853c2219f96269f4d4a6927f59124c23639412",
+      "normalization": "lf"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Rewrite",
+  "verification": {
+    "kind": "transformation",
+    "command": "Export the four exact source files with git show e40423a1b14ce8341de35748cc2a093c7c9b77a7:PATH; replace ArcNotes/arcnotes with ArcScope/arcscope; compare full LF-normalized target hashes. Run the independent repository, history, archive and native UI/Cloud checks.",
+    "expected": "Only the specified identity substitutions differ; all complete source/notice/archive failure tests and native gates pass for this owner.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright ArcForges contributors. AGPL-3.0-only current C# tooling, preserving the original Contracts Apache-2.0 attribution and full terms. ArcScope changes only owner identity literals.",
+    "files": [
+      "LICENSE",
+      "eng/third-party/LICENSE.Contracts.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "source",
+    "reason": "These files implement source/build/test tooling and are absent from the Native AOT application. Keep full original terms and adaptation attribution with the source."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Reuse the current reviewed AGPL C# provenance/release tooling and tests from ArcNotes, changing only product identity literals. Preserve the original Apache checker attribution and full terms. Existing owner-specific behavior is protected by a byte comparison of the prior tools after the same identity transformation. No retired repository, sibling build reference or new runtime dependency is introduced. The source PR passed all five native RID, licence, security and release-candidate checks before merge.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": false
+  },
+  "supersedes": null
+}

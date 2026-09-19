@@ -38,4 +38,7 @@ The repository check enforces the [project licence boundary](docs/licence-bounda
 for the application, core library, tests and C# tooling. Every build also checks
 the effective MSBuild declarations and local project references.
 
+[Source provenance](docs/provenance.md) is checked by the same C# tool. Portable
+release verification also checks the actual archived notices and source receipt.
+
 Read [CONTRIBUTING](CONTRIBUTING.md), [security reporting](SECURITY.md) and the [code of conduct](CODE_OF_CONDUCT.md). ArcScope remains **AGPL-3.0-only**; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).

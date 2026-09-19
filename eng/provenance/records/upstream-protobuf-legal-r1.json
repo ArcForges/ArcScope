@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "upstream-protobuf-legal-r1",
+  "kind": "legal-text",
+  "sourceRepository": "https://github.com/protocolbuffers/protobuf",
+  "sourceCommit": "f377bfefc5e2cfab68b816903c25b23e091c439d",
+  "sourcePaths": [
+    "LICENSE"
+  ],
+  "licence": {
+    "spdx": "BSD-3-Clause",
+    "category": "permissive",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "finding": "The retained file is the exact full governing legal text at the pinned source revision; byte comparison with the downloaded official source passed."
+      }
+    ],
+    "scope": "Retain the full legal document for Google.Protobuf 3.36.1; no implementation is imported under this legal-text record.",
+    "copyingPermission": "Verbatim reproduction of the licence/copyright document to fulfil the selected BSD-3-Clause redistribution notice terms; the complete permission and disclaimer are preserved."
+  },
+  "attribution": [
+    "Copyright 2008 Google Inc. All rights reserved."
+  ],
+  "targets": [
+    {
+      "path": "third-party/Protobuf.LICENSE.txt",
+      "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "normalization": "raw"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Copy",
+  "verification": {
+    "kind": "byte-match",
+    "command": "Compare third-party/Protobuf.LICENSE.txt with https://github.com/protocolbuffers/protobuf/blob/f377bfefc5e2cfab68b816903c25b23e091c439d/LICENSE and the fixed SHA-256; run the C# repository check.",
+    "expected": "Both raw SHA-256 values equal 6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d. The package retains the same full text under notices/upstream/.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright 2008 Google Inc. All rights reserved.\nRetain the complete licence, permissions and disclaimer in third-party/Protobuf.LICENSE.txt.",
+    "files": [
+      "third-party/Protobuf.LICENSE.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "packages",
+    "reason": "The original full root legal document and package-specific source summary accompany each portable archive."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Reviewed exact official legal text and recorded raw-byte comparison for the existing Google.Protobuf 3.36.1 dependency. This reconciles an existing retained document without claiming historical pre-copy approval or introducing its implementation.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": true
+  },
+  "supersedes": null
+}

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "upstream-avalonia-legal-r1",
+  "kind": "legal-text",
+  "sourceRepository": "https://github.com/AvaloniaUI/Avalonia",
+  "sourceCommit": "d3c867a9e2de379249b03dbeb3495bd7f076a81a",
+  "sourcePaths": [
+    "licence.md"
+  ],
+  "licence": {
+    "spdx": "MIT",
+    "category": "permissive",
+    "evidence": [
+      {
+        "path": "licence.md",
+        "sha256": "213814d306090074d234d760239ff0f67eb9b8d20eefb4d5631bb39dbe0b769b",
+        "finding": "The retained file is the exact full governing legal text at the pinned source revision; byte comparison with the downloaded official source passed."
+      }
+    ],
+    "scope": "Retain the full legal document for Avalonia 12.1.2; no implementation is imported under this legal-text record.",
+    "copyingPermission": "Verbatim reproduction of the licence/copyright document to fulfil the selected MIT redistribution notice terms; the complete permission and disclaimer are preserved."
+  },
+  "attribution": [
+    "Copyright (c) AvaloniaUI OÜ. All Rights Reserved."
+  ],
+  "targets": [
+    {
+      "path": "third-party/Avalonia.LICENSE.txt",
+      "sha256": "213814d306090074d234d760239ff0f67eb9b8d20eefb4d5631bb39dbe0b769b",
+      "normalization": "raw"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Copy",
+  "verification": {
+    "kind": "byte-match",
+    "command": "Compare third-party/Avalonia.LICENSE.txt with https://github.com/AvaloniaUI/Avalonia/blob/d3c867a9e2de379249b03dbeb3495bd7f076a81a/licence.md and the fixed SHA-256; run the C# repository check.",
+    "expected": "Both raw SHA-256 values equal 213814d306090074d234d760239ff0f67eb9b8d20eefb4d5631bb39dbe0b769b. The package retains the same full text under notices/upstream/.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright (c) AvaloniaUI OÜ. All Rights Reserved.\nRetain the complete licence, permissions and disclaimer in third-party/Avalonia.LICENSE.txt.",
+    "files": [
+      "third-party/Avalonia.LICENSE.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "packages",
+    "reason": "The original full root legal document and package-specific source summary accompany each portable archive."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Reviewed exact official legal text and recorded raw-byte comparison for the existing Avalonia 12.1.2 dependency. This reconciles an existing retained document without claiming historical pre-copy approval or introducing its implementation.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": true
+  },
+  "supersedes": null
+}

@@ -26,6 +26,7 @@ public static partial class Program
                     await Run("git", ["config", "--worktree", "core.hooksPath", ".githooks"]);
                     break;
                 case ["check"]: await Check(); break;
+                case ["provenance-notice"]: await ProvenancePolicy.Check(Directory.GetCurrentDirectory(), writeNotice: true); break;
                 case ["version"]:
                     var generatedVersion = Version(Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER") ?? "0", Environment.GetEnvironmentVariable("GITHUB_RUN_ATTEMPT") ?? "1");
                     Console.WriteLine(generatedVersion);
@@ -38,7 +39,7 @@ public static partial class Program
                     Directory.CreateDirectory("artifacts/evidence");
                     await Run(Executable(rid), ["--smoke-live", "--evidence", Path.GetFullPath($"artifacts/evidence/{rid}.json")]);
                     break;
-                case ["pack", var rid, var version, var commit]: Pack(rid, version, commit); break;
+                case ["pack", var rid, var version, var commit]: await Pack(rid, version, commit); break;
                 case ["verify", var path, var version, var commit]:
                     var manifests = Directory.GetFiles(path, "manifest.json", SearchOption.AllDirectories);
                     if (manifests.Length != Rids.Length) throw new InvalidOperationException("Expected all five native candidates.");
@@ -50,7 +51,7 @@ public static partial class Program
                     }
                     Console.WriteLine("Verified all five immutable native candidates.");
                     break;
-                default: throw new ArgumentException("Use hooks, check, version, prepare RID VERSION, smoke RID, pack RID VERSION COMMIT, or verify DIRECTORY VERSION COMMIT.");
+                default: throw new ArgumentException("Use hooks, check, provenance-notice, version, prepare RID VERSION, smoke RID, pack RID VERSION COMMIT, or verify DIRECTORY VERSION COMMIT.");
             }
             return 0;
         }
@@ -86,6 +87,7 @@ public static partial class Program
     {
         ValidateRid(rid);
         ValidateVersion(version);
+        await CheckSourceForDistribution();
         var source = Path.GetFullPath($"artifacts/publish/{rid}");
         var stage = Stage(rid);
         if (Directory.Exists(stage)) throw new InvalidOperationException("Staging already exists; use a fresh worktree/output directory.");
@@ -100,6 +102,10 @@ public static partial class Program
         }
         foreach (var name in new[] { "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md" }) File.Copy(name, Path.Combine(stage, name));
         WriteDependencyNotices(stage);
+        var requiredNotices = ProvenancePolicy.PackageNotices(Directory.GetCurrentDirectory());
+        File.WriteAllBytes(Path.Combine(stage, "notices/source-provenance.txt"), requiredNotices["notices/source-provenance.txt"]);
+        ProvenancePolicy.VerifyPackageNotices(requiredNotices, path => File.Exists(Path.Combine(stage, path)) ? File.ReadAllBytes(Path.Combine(stage, path)) : null);
+        File.Copy("artifacts/evidence/provenance.json", Path.Combine(stage, "notices/provenance-source.json"));
         if (!File.Exists(Executable(rid))) throw new InvalidOperationException("Published executable is missing.");
         if (rid.StartsWith("osx-", StringComparison.Ordinal))
         {
@@ -154,11 +160,21 @@ public static partial class Program
             File.Copy(file, Path.Combine(stage, "notices/upstream", Path.GetFileName(file)));
     }
 
-    private static void Pack(string rid, string version, string commit)
+    private static async Task CheckSourceForDistribution()
+    {
+        await ProvenancePolicy.Check(Directory.GetCurrentDirectory());
+        if ((await Capture("git", ["status", "--porcelain"])).Length != 0)
+            throw new InvalidOperationException("Commit reviewed source before producing a source-bound portable candidate.");
+    }
+
+    private static async Task Pack(string rid, string version, string commit)
     {
         ValidateRid(rid);
         ValidateVersion(version);
         if (commit.Length != 40 || !commit.All(char.IsAsciiHexDigit)) throw new ArgumentException("Expected a full Git commit.");
+        await CheckSourceForDistribution();
+        if ((await Capture("git", ["rev-parse", "HEAD"])).Trim() != commit)
+            throw new InvalidOperationException("Pack source differs from the candidate revision.");
         var evidence = $"artifacts/evidence/{rid}.json";
         using var smoke = JsonDocument.Parse(File.ReadAllText(evidence));
         ValidateSmoke(smoke.RootElement, rid, version, commit);
@@ -175,6 +191,7 @@ public static partial class Program
             using var gzip = new GZipStream(file, CompressionLevel.Optimal);
             TarFile.CreateFromDirectory(Stage(rid), gzip, false);
         }
+        VerifyArchiveNotices(archive, commit, Directory.GetCurrentDirectory());
         File.Copy(evidence, Path.Combine(folder, "smoke.json"));
         File.Copy(Path.ChangeExtension(evidence, ".png"), Path.Combine(folder, "screen.png"));
         var manifest = new Candidate(rid, version, commit, name, Hash(archive), Hash(evidence));
@@ -183,7 +200,7 @@ public static partial class Program
         Console.WriteLine($"Packed verified {rid}: {name}");
     }
 
-    public static string VerifyCandidate(string manifestPath, string version, string commit)
+    public static string VerifyCandidate(string manifestPath, string version, string commit, string? sourceRoot = null)
     {
         var manifest = JsonSerializer.Deserialize<Candidate>(File.ReadAllText(manifestPath), Json) ?? throw new InvalidOperationException("Missing manifest.");
         ValidateRid(manifest.Rid);
@@ -200,7 +217,59 @@ public static partial class Program
             throw new InvalidOperationException("Download checksum mismatch.");
         using var evidence = JsonDocument.Parse(File.ReadAllText(smoke));
         ValidateSmoke(evidence.RootElement, manifest.Rid, version, commit);
+        VerifyArchiveNotices(archive, commit, sourceRoot ?? Directory.GetCurrentDirectory());
         return manifest.Rid;
+    }
+
+    private static void VerifyArchiveNotices(string archive, string commit, string sourceRoot)
+    {
+        var expected = ProvenancePolicy.PackageNotices(sourceRoot);
+        const string receiptName = "notices/provenance-source.json";
+        var selected = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        void Retain(string path, Stream? stream)
+        {
+            while (path.StartsWith("./", StringComparison.Ordinal)) path = path[2..];
+            path = path.TrimEnd('/');
+            if (path.Length == 0 || path == ".") return;
+            if (path.StartsWith('/') || path.IndexOfAny(['\\', ':', '\0']) >= 0 || path.Split('/').Any(p => p is "" or "." or ".."))
+                throw new InvalidOperationException("Escaping archive member: " + path);
+            if (!members.Add(path)) throw new InvalidOperationException("Duplicate or case-colliding archive member: " + path);
+            if (!expected.ContainsKey(path) && path != receiptName) return;
+            if (stream is null) throw new InvalidOperationException("Required notice is not a regular archive file: " + path);
+            using var memory = new MemoryStream();
+            stream.CopyTo(memory);
+            if (!selected.TryAdd(path, memory.ToArray())) throw new InvalidOperationException("Duplicate archive notice: " + path);
+        }
+        if (archive.EndsWith(".zip", StringComparison.Ordinal))
+        {
+            using var zip = ZipFile.OpenRead(archive);
+            foreach (var entry in zip.Entries)
+            {
+                if (((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000)
+                    throw new InvalidOperationException("Linked ZIP member: " + entry.FullName);
+                using var stream = entry.Open();
+                Retain(entry.FullName, stream);
+            }
+        }
+        else
+        {
+            using var file = File.OpenRead(archive);
+            using var gzip = new GZipStream(file, CompressionMode.Decompress);
+            using var tar = new TarReader(gzip);
+            while (tar.GetNextEntry() is { } entry)
+            {
+                if (entry.EntryType is TarEntryType.SymbolicLink or TarEntryType.HardLink)
+                    throw new InvalidOperationException("Linked tar member: " + entry.Name);
+                Retain(entry.Name, entry.DataStream);
+            }
+        }
+        ProvenancePolicy.VerifyPackageNotices(expected, path => selected.GetValueOrDefault(path));
+        if (!selected.TryGetValue(receiptName, out var receipt)) throw new InvalidOperationException("Missing candidate source provenance.");
+        using var report = JsonDocument.Parse(receipt);
+        if (report.RootElement.GetProperty("sourceCommit").GetString() != commit ||
+            report.RootElement.GetProperty("dirty").GetBoolean() || report.RootElement.GetProperty("result").GetString() != "passed")
+            throw new InvalidOperationException("Candidate provenance does not match clean reviewed source.");
     }
 
     private static void ValidateSmoke(JsonElement smoke, string rid, string version, string commit)
@@ -223,6 +292,7 @@ public static partial class Program
     private static async Task Check()
     {
         await Run("git", ["diff", "--check"]);
+        await ProvenancePolicy.Check(Directory.GetCurrentDirectory());
         using var upstream = JsonDocument.Parse(File.ReadAllText("third-party/sources.json"));
         foreach (var entry in upstream.RootElement.EnumerateArray())
         {

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "instructions": "Copy this shape into records/<id>.json and complete every field before reuse. This template is deliberately not an approvable record. Generated material requires nonempty generators and inputs with repository, commit, paths, spdx and file-level evidence; temporary material requires a removalTrigger. Used records are immutable; create a superseding revision. See docs/provenance.md.",
+  "example": {
+    "schemaVersion": 1,
+    "id": "material-name-r1",
+    "kind": "source",
+    "sourceRepository": "https://github.com/OWNER/REPOSITORY",
+    "sourceCommit": "FULL_IMMUTABLE_COMMIT",
+    "sourcePaths": [
+      "EXACT/SOURCE/PATH"
+    ],
+    "licence": {
+      "spdx": "REVIEWED_SPDX_EXPRESSION",
+      "category": "REVIEWED_POLICY_CATEGORY",
+      "evidence": [
+        {
+          "path": "GOVERNING/LICENCE/OR/FILE",
+          "sha256": "SHA256_OF_LICENCE_EVIDENCE",
+          "finding": "Explain the file-level licence and any subtree override."
+        }
+      ],
+      "scope": "Describe precisely which material and rights are used.",
+      "copyingPermission": null
+    },
+    "attribution": [
+      "EXACT_COPYRIGHT_AND_ATTRIBUTION"
+    ],
+    "targets": [
+      {
+        "path": "EXACT/TARGET/PATH",
+        "sha256": "SHA256_OF_REVIEWED_TARGET",
+        "normalization": "lf"
+      }
+    ],
+    "disposition": "Copy",
+    "verification": {
+      "kind": "byte-match",
+      "command": "Reproducible comparison or generation command.",
+      "expected": "Independent expected result.",
+      "artifacts": []
+    },
+    "notice": {
+      "required": true,
+      "text": "EXACT_REQUIRED_NOTICE",
+      "files": [
+        "EXACT/NOTICE/PATH"
+      ],
+      "distribution": "source",
+      "reason": "Explain whether material is distributed in packages and where its notice is retained."
+    },
+    "lifetime": {
+      "status": "permanent",
+      "owner": "ACCOUNTABLE_OWNER",
+      "removalTrigger": null
+    },
+    "generation": null,
+    "review": {
+      "owner": "Licensing and Provenance Owner",
+      "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+      "reviewedOn": "2026-09-19",
+      "decision": "PENDING_REVIEW",
+      "rationale": "Describe the file-level compatibility finding before introducing material.",
+      "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+      "reconciliation": false
+    },
+    "supersedes": null,
+    "artifactTargets": []
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "contracts-apache-legal-r1",
+  "kind": "legal-text",
+  "sourceRepository": "https://github.com/ArcForges/Contracts",
+  "sourceCommit": "18a970c67c463f1971ca05773b80f31a1b1ba1a7",
+  "sourcePaths": [
+    "LICENSE"
+  ],
+  "licence": {
+    "spdx": "Apache-2.0",
+    "category": "permissive",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "finding": "Verbatim Apache 2.0 licence text accompanying the explicitly Apache Python source."
+      }
+    ],
+    "scope": "Retain the complete Apache terms accompanying the rewritten source checker; this document does not add a runtime dependency.",
+    "copyingPermission": "Verbatim reproduction of the licence accompanying Apache-2.0 redistribution, including section 4(a)."
+  },
+  "attribution": [
+    "Apache License, Version 2.0. Copyright notices remain in the individual source records."
+  ],
+  "targets": [
+    {
+      "path": "eng/third-party/LICENSE.Contracts.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "normalization": "lf"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Copy",
+  "verification": {
+    "kind": "byte-match",
+    "command": "dotnet run --project eng/ArcForges.Repository -- check",
+    "expected": "Retain the full legal terms of the copied checker and tests; this is a legal document, not implementation. Exact reviewed target digests and immutable history must match.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Apache License, Version 2.0. Copyright notices remain in the individual source records.",
+    "files": [
+      "eng/third-party/LICENSE.Contracts.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "source",
+    "reason": "Source provenance summary supplements the retained original full legal text."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Retain the complete Apache terms accompanying the rewritten source checker; this document does not add a runtime dependency.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": false
+  },
+  "supersedes": null
+}
