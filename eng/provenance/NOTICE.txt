@@ -1,0 +1,78 @@
+ArcForges source provenance notices
+
+Generated from reviewed active records. Original licence files and dependency notices remain authoritative.
+
+arcnotes-provenance-tools-r1
+Source: https://github.com/ArcForges/ArcNotes @ e40423a1b14ce8341de35748cc2a093c7c9b77a7
+Material licence: AGPL-3.0-only
+Notice scope: source
+Copyright ArcForges contributors. Current C# tooling/tests: AGPL-3.0-only.
+Original provenance checker from Contracts: Apache-2.0; full text in eng/third-party/LICENSE.Contracts.txt.
+ArcScope adaptation changes product identity literals only; the current owner remains independently built.
+Copyright ArcForges contributors. AGPL-3.0-only current C# tooling, preserving the original Contracts Apache-2.0 attribution and full terms. ArcScope changes only owner identity literals.
+
+canonical-agpl-legal-r1
+Source: https://github.com/github/choosealicense.com @ 58267f8f2c5c0099810849cfd7677f52ae0c0eb3
+Material licence: AGPL-3.0-only
+Notice scope: packages
+Copyright (C) 2007 Free Software Foundation, Inc.
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+contracts-apache-legal-r1
+Source: https://github.com/ArcForges/Contracts @ 18a970c67c463f1971ca05773b80f31a1b1ba1a7
+Material licence: Apache-2.0
+Notice scope: source
+Apache License, Version 2.0. Copyright notices remain in the individual source records.
+Apache License, Version 2.0. Copyright notices remain in the individual source records.
+
+upstream-avalonia-legal-r1
+Source: https://github.com/AvaloniaUI/Avalonia @ d3c867a9e2de379249b03dbeb3495bd7f076a81a
+Material licence: MIT
+Notice scope: packages
+Copyright (c) AvaloniaUI OÜ. All Rights Reserved.
+Copyright (c) AvaloniaUI OÜ. All Rights Reserved.
+Retain the complete licence, permissions and disclaimer in third-party/Avalonia.LICENSE.txt.
+
+upstream-dotnet-legal-r1
+Source: https://github.com/dotnet/dotnet @ 95017c711e6afc1085133d440e42b4bd78155701
+Material licence: MIT
+Notice scope: packages
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+Copyright (c) .NET Foundation and Contributors. All rights reserved.
+Retain the complete licence, permissions and disclaimer in third-party/dotnet.LICENSE.txt.
+
+upstream-grpc-legal-r1
+Source: https://github.com/grpc/grpc-dotnet @ 4301104498e53898a452e8fb2fea6c0b1492b755
+Material licence: Apache-2.0
+Notice scope: packages
+Apache License, Version 2.0. gRPC for .NET contributors; full source licence is retained.
+Apache License, Version 2.0. gRPC for .NET contributors; full source licence is retained.
+Retain the complete licence, permissions and disclaimer in third-party/gRPC.LICENSE.txt.
+
+upstream-microcom-legal-r1
+Source: https://github.com/kekekeks/MicroCom @ 76785efcafd91b5902fd19dd11145f6dd655b7b4
+Material licence: MIT
+Notice scope: packages
+Copyright (c) 2021 Nikita Tsukanov
+Copyright (c) 2021 Nikita Tsukanov
+Retain the complete licence, permissions and disclaimer in third-party/MicroCom.LICENSE.txt.
+
+upstream-protobuf-legal-r1
+Source: https://github.com/protocolbuffers/protobuf @ f377bfefc5e2cfab68b816903c25b23e091c439d
+Material licence: BSD-3-Clause
+Notice scope: packages
+Copyright 2008 Google Inc. All rights reserved.
+Copyright 2008 Google Inc. All rights reserved.
+Retain the complete licence, permissions and disclaimer in third-party/Protobuf.LICENSE.txt.
+
+upstream-tmds-dbus-legal-r1
+Source: https://github.com/tmds/Tmds.DBus @ b4a7fed0b878f74cb54f7cca84d2889af4e596ba
+Material licence: MIT
+Notice scope: packages
+Copyright 2006 Alp Toker <alp@atoker.com>
+Copyright 2010 Other Contributors
+Copyright 2016 Tom Deseyn <tom.deseyn@gmail.com>
+Copyright 2006 Alp Toker <alp@atoker.com>
+Copyright 2010 Other Contributors
+Copyright 2016 Tom Deseyn <tom.deseyn@gmail.com>
+Retain the complete licence, permissions and disclaimer in third-party/Tmds.DBus.LICENSE.txt.

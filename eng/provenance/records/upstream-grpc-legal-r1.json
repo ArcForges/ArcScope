@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "upstream-grpc-legal-r1",
+  "kind": "legal-text",
+  "sourceRepository": "https://github.com/grpc/grpc-dotnet",
+  "sourceCommit": "4301104498e53898a452e8fb2fea6c0b1492b755",
+  "sourcePaths": [
+    "LICENSE"
+  ],
+  "licence": {
+    "spdx": "Apache-2.0",
+    "category": "permissive",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "finding": "The retained file is the exact full governing legal text at the pinned source revision; byte comparison with the downloaded official source passed."
+      }
+    ],
+    "scope": "Retain the full legal document for gRPC for .NET 2.83.0; no implementation is imported under this legal-text record.",
+    "copyingPermission": "Verbatim reproduction of the licence/copyright document to fulfil the selected Apache-2.0 redistribution notice terms; the complete permission and disclaimer are preserved."
+  },
+  "attribution": [
+    "Apache License, Version 2.0. gRPC for .NET contributors; full source licence is retained."
+  ],
+  "targets": [
+    {
+      "path": "third-party/gRPC.LICENSE.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "normalization": "raw"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Copy",
+  "verification": {
+    "kind": "byte-match",
+    "command": "Compare third-party/gRPC.LICENSE.txt with https://github.com/grpc/grpc-dotnet/blob/4301104498e53898a452e8fb2fea6c0b1492b755/LICENSE and the fixed SHA-256; run the C# repository check.",
+    "expected": "Both raw SHA-256 values equal cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30. The package retains the same full text under notices/upstream/.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Apache License, Version 2.0. gRPC for .NET contributors; full source licence is retained.\nRetain the complete licence, permissions and disclaimer in third-party/gRPC.LICENSE.txt.",
+    "files": [
+      "third-party/gRPC.LICENSE.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "packages",
+    "reason": "The original full root legal document and package-specific source summary accompany each portable archive."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-19",
+    "decision": "approved",
+    "rationale": "Reviewed exact official legal text and recorded raw-byte comparison for the existing gRPC for .NET 2.83.0 dependency. This reconciles an existing retained document without claiming historical pre-copy approval or introducing its implementation.",
+    "baselineCommit": "6c6772e08941202387f584f815554a37e35707af",
+    "reconciliation": true
+  },
+  "supersedes": null
+}
