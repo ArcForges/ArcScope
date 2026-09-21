@@ -4,17 +4,16 @@ Use a branch/worktree and open a pull request. Keep one coherent change per PR a
 
 ```sh
 dotnet restore ArcScope.slnx --locked-mode
-dotnet run --project eng/ArcForges.Repository -- hooks
-dotnet run --project eng/ArcForges.Repository -- check
 dotnet format ArcScope.slnx --verify-no-changes --no-restore
 dotnet build ArcScope.slnx -c Release --no-restore
-dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build
+dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check
+dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build --filter-not-class '*.TransportTests'
 ```
 
-`dotnet format ArcScope.slnx --no-restore` fixes C# formatting. Hooks are local to the checkout using Git worktree configuration. Pre-commit checks text and whitespace; pre-push restores locked dependencies, builds and runs deterministic tests. Hosted CI is authoritative even if hooks are not installed. Hooks do not call the live backend.
+`dotnet format ArcScope.slnx --no-restore` fixes C# formatting. Hooks are local to the checkout using Git worktree configuration. Pre-commit and pre-push check Git whitespace only. Run the relevant commands above explicitly once for source changes; documentation-only changes need consistency review. CI repeats no GUI/live/runtime scenarios and runs offline unit checks on one Linux host.
 
 Change direct dependency versions only in `Directory.Packages.props`. After an intentional dependency change, run `dotnet restore ArcScope.slnx --force-evaluate -p:RestoreLockedMode=false`, inspect every lock diff, and rerun locked restore and validation. Updating an SDK also requires refreshing implicit runtime/compiler entries in locks. Do not hand-edit content hashes or disable audit/locked restore to make a bot PR green.
 
 Review upstream licence changes when updating dependencies. `third-party/` preserves primary licence texts missing from NuGet packages, with pinned source commits and hashes. Update those records if the corresponding upstream terms change; preserve their bytes. Native package notices embedded by upstream are collected automatically during staging.
 
-Native release/live validation is described in [development](docs/development.md). No secrets are required for Hello. Do not place credentials or personal data in fixtures, logs or screenshots. Report security issues privately using [SECURITY](SECURITY.md).
+Optional local native and loopback transport validation is described in [development](docs/development.md); it is not a CI or publication prerequisite. No secrets are required for Hello. Do not place credentials or personal data in fixtures, logs or screenshots. Report security issues privately using [SECURITY](SECURITY.md).

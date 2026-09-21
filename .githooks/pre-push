@@ -1,6 +1,4 @@
 #!/bin/sh
 set -eu
-dotnet restore ArcScope.slnx --locked-mode
-dotnet format ArcScope.slnx --verify-no-changes --no-restore
-dotnet build ArcScope.slnx -c Release --no-restore
-dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build
+# Build and test explicitly once when the change requires them; never on every push.
+git diff --check

@@ -40,13 +40,12 @@ Every build uses this repository's committed files, locks and tests.
 
 Native staging requires clean audited source. Portable archives retain the original
 root licence, six complete upstream legal texts, a package source summary and the
-actual source receipt. Packing and independent release verification inspect ZIP/tar
+actual source receipt. One publication-handoff check inspects ZIP/tar
 contents, including case-colliding/duplicate paths, traversal, links, changed/missing
 notices and wrong/dirty source identities. Existing dependency notices remain intact.
 
-All five native RID, Native AOT, real UI/live Cloud and publication gates remain
-required. Deterministic checks, local Windows execution, hosted native results and
-public release verification are separate evidence. They do not claim complete product
-features, trusted OS signing or later commercial acceptance.
+Current CI and publication follow the [accepted validation policy](https://github.com/ArcForges/ArcForges-Design/blob/47db6670a727317939b91245e8c0b288834acf99/docs/assurance/ci-and-local-validation-policy.md). Only Windows/Linux compilation, offline unit/static/security checks and required provenance are automated; no macOS/UI/live test or public-download cycle is required. A build is not runtime proof.
 
 WP02.04 supersedes the tooling record with `arcnotes-provenance-tools-r2`: the reviewed ArcNotes merge `0c797e30690a10d8798ddca19ca7f37b16cecf01` supplies compiled identity and independent source resolution. The immutable r1 remains. The record binds every adapted file and the product-specific future format/storage declarations. Runtime support code is covered by the full AGPL licence and origin/source pointer included in portable README; checker-only Apache terms stay with corresponding source.
+
+The active r3 successor records owner-authored CI/release reduction against the same ArcNotes origin. It preserves r1/r2, their attribution and all unchanged runtime code. Its revised workflow/tool/test bindings remove mandatory smoke/screenshot inputs and repeated validation while retaining one publication handoff integrity check.

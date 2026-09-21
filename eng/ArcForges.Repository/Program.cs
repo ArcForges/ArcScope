@@ -13,6 +13,7 @@ namespace ArcForges.Repository;
 public static partial class Program
 {
     public static readonly string[] Rids = ["win-x64", "win-arm64", "linux-x64", "osx-x64", "osx-arm64"];
+    public static readonly string[] ReleaseRids = ["win-x64", "win-arm64", "linux-x64"];
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     public static async Task<int> Main(string[] args)
@@ -36,6 +37,8 @@ public static partial class Program
                     break;
                 case ["prepare", var rid, var version]: await Prepare(rid, version); break;
                 case ["smoke", var rid]:
+                    if (Environment.GetEnvironmentVariable("CI") == "true" || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true")
+                        throw new InvalidOperationException("Runtime smoke is an explicit local-only operation.");
                     ValidateRid(rid);
                     Directory.CreateDirectory("artifacts/evidence");
                     await Run(Executable(rid), ["--smoke-live", "--evidence", Path.GetFullPath($"artifacts/evidence/{rid}.json")]);
@@ -43,14 +46,15 @@ public static partial class Program
                 case ["pack", var rid, var version, var commit]: await Pack(rid, version, commit); break;
                 case ["verify", var path, var version, var commit]:
                     var manifests = Directory.GetFiles(path, "manifest.json", SearchOption.AllDirectories);
-                    if (manifests.Length != Rids.Length) throw new InvalidOperationException("Expected all five native candidates.");
+                    if (manifests.Length != ReleaseRids.Length) throw new InvalidOperationException("Expected the three Windows/Linux release candidates.");
                     var seen = new HashSet<string>(StringComparer.Ordinal);
                     foreach (var manifest in manifests)
                     {
                         var rid = VerifyCandidate(manifest, version, commit);
                         if (!seen.Add(rid)) throw new InvalidOperationException("Duplicate candidate RID.");
                     }
-                    Console.WriteLine("Verified all five immutable native candidates.");
+                    if (!seen.SetEquals(ReleaseRids)) throw new InvalidOperationException("Release candidate RID set differs from Windows/Linux producers.");
+                    Console.WriteLine("Verified the three Windows/Linux release candidates.");
                     break;
                 default: throw new ArgumentException("Use hooks, check, provenance-notice, version, prepare RID VERSION, smoke RID, pack RID VERSION COMMIT, or verify DIRECTORY VERSION COMMIT.");
             }
@@ -108,9 +112,10 @@ public static partial class Program
         ProvenancePolicy.VerifyPackageNotices(requiredNotices, path => File.Exists(Path.Combine(stage, path)) ? File.ReadAllBytes(Path.Combine(stage, path)) : null);
         File.Copy("artifacts/evidence/provenance.json", Path.Combine(stage, "notices/provenance-source.json"));
         if (!File.Exists(Executable(rid))) throw new InvalidOperationException("Published executable is missing.");
-        await Run(Executable(rid), ["--build-info", "--evidence", Path.Combine(stage, "build-identity.json")]);
-        IdentityEvidence.Verify(File.ReadAllBytes(Path.Combine(stage, "build-identity.json")), Directory.GetCurrentDirectory(), version,
+        // This is a build-input receipt, not an assertion that the packaged application ran.
+        var identity = IdentityEvidence.ExpectedReport(Directory.GetCurrentDirectory(), version,
             (await Capture("git", ["rev-parse", "HEAD"])).Trim());
+        await File.WriteAllTextAsync(Path.Combine(stage, "build-identity.json"), identity.ToJsonString(Json));
         if (rid.StartsWith("osx-", StringComparison.Ordinal))
         {
             var parts = version.Split('.');
@@ -176,12 +181,10 @@ public static partial class Program
         ValidateRid(rid);
         ValidateVersion(version);
         if (commit.Length != 40 || !commit.All(char.IsAsciiHexDigit)) throw new ArgumentException("Expected a full Git commit.");
-        await CheckSourceForDistribution();
+        if ((await Capture("git", ["status", "--porcelain"])).Length != 0)
+            throw new InvalidOperationException("Commit reviewed source before packing a portable candidate.");
         if ((await Capture("git", ["rev-parse", "HEAD"])).Trim() != commit)
             throw new InvalidOperationException("Pack source differs from the candidate revision.");
-        var evidence = $"artifacts/evidence/{rid}.json";
-        using var smoke = JsonDocument.Parse(File.ReadAllText(evidence));
-        ValidateSmoke(smoke.RootElement, rid, version, commit);
         var folder = $"artifacts/candidate/{rid}";
         Directory.CreateDirectory(folder);
         var extension = rid.StartsWith("win-", StringComparison.Ordinal) ? ".zip" : ".tar.gz";
@@ -195,13 +198,10 @@ public static partial class Program
             using var gzip = new GZipStream(file, CompressionLevel.Optimal);
             TarFile.CreateFromDirectory(Stage(rid), gzip, false);
         }
-        VerifyArchiveNotices(archive, commit, Directory.GetCurrentDirectory(), version);
-        File.Copy(evidence, Path.Combine(folder, "smoke.json"));
-        File.Copy(Path.ChangeExtension(evidence, ".png"), Path.Combine(folder, "screen.png"));
-        var manifest = new Candidate(rid, version, commit, name, Hash(archive), Hash(evidence));
+        var manifest = new Candidate(rid, version, commit, name, Hash(archive));
         File.WriteAllText(Path.Combine(folder, "manifest.json"), JsonSerializer.Serialize(manifest, Json));
         File.WriteAllText(archive + ".sha256", $"{manifest.ArchiveSha256}  {name}\n");
-        Console.WriteLine($"Packed verified {rid}: {name}");
+        Console.WriteLine($"Packed compiled {rid}: {name}");
     }
 
     public static string VerifyCandidate(string manifestPath, string version, string commit, string? sourceRoot = null)
@@ -214,13 +214,10 @@ public static partial class Program
         if (manifest.Archive != expected) throw new InvalidOperationException("Invalid archive path.");
         var folder = Path.GetDirectoryName(manifestPath)!;
         var archive = Path.Combine(folder, manifest.Archive);
-        var smoke = Path.Combine(folder, "smoke.json");
-        if (Hash(archive) != manifest.ArchiveSha256 || Hash(smoke) != manifest.SmokeSha256)
+        if (Hash(archive) != manifest.ArchiveSha256)
             throw new InvalidOperationException("Candidate hash mismatch.");
         if (File.ReadAllText(archive + ".sha256") != $"{manifest.ArchiveSha256}  {manifest.Archive}\n")
             throw new InvalidOperationException("Download checksum mismatch.");
-        using var evidence = JsonDocument.Parse(File.ReadAllText(smoke));
-        ValidateSmoke(evidence.RootElement, manifest.Rid, version, commit);
         VerifyArchiveNotices(archive, commit, sourceRoot ?? Directory.GetCurrentDirectory(), version);
         return manifest.Rid;
     }
@@ -278,17 +275,6 @@ public static partial class Program
             throw new InvalidOperationException("Candidate provenance does not match clean reviewed source.");
     }
 
-    private static void ValidateSmoke(JsonElement smoke, string rid, string version, string commit)
-    {
-        if (!smoke.GetProperty("success").GetBoolean() || !smoke.GetProperty("nativeAot").GetBoolean() ||
-            smoke.GetProperty("rid").GetString() != rid || smoke.GetProperty("sourceRevision").GetString() != commit ||
-            smoke.GetProperty("version").GetString() != version || smoke.GetProperty("uiGreeting").GetString() != "Hello, ArcScope!" ||
-            !smoke.GetProperty("cloud").GetProperty("nativeAot").GetBoolean())
-            throw new InvalidOperationException("Native UI/live evidence does not match the candidate.");
-        var expected = new[] { "native-ui-live-action", "unicode-whitespace-boundary", "InvalidArgument", "ResourceExhausted" };
-        if (!smoke.GetProperty("checks").EnumerateArray().Select(c => c.GetString()).SequenceEqual(expected))
-            throw new InvalidOperationException("Incomplete native UI/live checks.");
-    }
     private static string Hash(string path)
     {
         using var stream = File.OpenRead(path);
@@ -376,4 +362,4 @@ public static partial class Program
     private static async Task Run(string command, string[] args) => Console.Write(await Capture(command, args));
 }
 
-public sealed record Candidate(string Rid, string Version, string SourceRevision, string Archive, string ArchiveSha256, string SmokeSha256);
+public sealed record Candidate(string Rid, string Version, string SourceRevision, string Archive, string ArchiveSha256);

@@ -1,4 +1,3 @@
 #!/bin/sh
 set -eu
-dotnet run --project eng/ArcForges.Repository -- check
 git diff --cached --check

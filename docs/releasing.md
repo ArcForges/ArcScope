@@ -1,23 +1,17 @@
 # Automatic portable releases
 
-No release API key or publishing account is required. CI uses the repository-scoped `GITHUB_TOKEN`; only the release job receives `contents: write`. Public Hello needs no secret. Repository security features and the required `Verify` check are configured in GitHub settings, not injected into a client binary.
+CI follows the [accepted validation policy](https://github.com/ArcForges/ArcForges-Design/blob/47db6670a727317939b91245e8c0b288834acf99/docs/assurance/ci-and-local-validation-policy.md). No macOS or application runtime test runs in any workflow.
 
-1. A PR runs deterministic tests, formatting/locked restore, secret/dependency review, C#/Actions CodeQL and five native builds: Windows x64/ARM64, Linux x64, macOS x64/ARM64.
-2. Each native job publishes the self-contained AOT directory, includes notices, prepares its portable layout, and runs the exact staged executable's native UI/live smoke. macOS ad-hoc signing happens before testing and archiving.
-3. Only after that success does it create a candidate archive, SHA-256 checksum, source/version/RID manifest and evidence. Upload artifact names include the run ID and attempt. Failed jobs retain diagnostic evidence but cannot produce a release candidate.
-4. `Verify` requires all platform and security jobs and downloads all five archives to exercise the aggregate identity/hash/evidence check before merge. A successful **push to main** alone enables automatic publication. Manual/scheduled runs and PRs validate only.
-5. The release job downloads candidates from that same workflow run, verifies all five identities, hashes and evidence, then uploads those exact archives without rebuilding. Version is `0.1.0-ci.<run_number>.<run_attempt>`. Re-running uses a new immutable version. It creates a draft first, uploads all assets, then makes the prerelease visible; a failed upload leaves a draft rather than a complete-looking release.
+1. PRs compile Windows x64/ARM64 and Linux x64 Native AOT candidates. Formatting, source/licence checks, static assembly metadata inspection and offline unit tests run once on Linux. Secret/dependency review and C#/Actions CodeQL remain required.
+2. Staging includes the complete executable directory, dependency/legal notices and build-input identity receipt without launching the app. Packing creates each archive, source/version/RID manifest and SHA-256 sidecar. Smoke results and screenshots are not release inputs.
+3. The required `Verify` job checks applicable job outcomes only. It does not download or rescan artifacts. PR, manual and scheduled runs never publish.
+4. A successful main push promotes the same run's three candidates. The release job retrieves them once and performs one identity, archive-integrity and licence/provenance check at this publication handoff. It does not rebuild or execute them.
+5. The release job creates a draft `v0.1.0-ci.<run_number>.<run_attempt>`, uploads three archives, three checksum sidecars and `arcscope-verification.tar.gz` containing build manifests, then exposes the prerelease. `Verify publication` requires the publishing job to succeed.
 
-Download `arcscope-VERSION-RID.zip` or `.tar.gz` together with its `.sha256`. Evidence and package inventory describe what was exercised; a checksum detects corruption but is not a trusted code signature. Do not overwrite a published archive or repoint its Git tag. Fix the source and publish a new successful main run. Consumers can roll back by extracting an older complete version into a separate directory; this Hello version has no persisted user data or migration.
+The repository-scoped `GITHUB_TOKEN` grants `contents: write` only to publication. The explicit main publication condition tolerates the intentionally skipped PR-only dependency review while requiring `Verify` success. Do not overwrite published archives or repoint tags; do not rerun publication to manufacture validation evidence.
 
-The five candidates use native GitHub hosts, not cross-compilation as a substitute for execution. A live service outage blocks publication and preserves its error evidence. First release publication itself is verified only after the PR is merged; a green PR does not demonstrate a main-branch release has already occurred.
+Provider publication success and the expected commit/version close post-merge verification. Do not routinely download public assets, compare hashes/members, install them or rerun consumers. No live service availability is a release gate. A green build is not a native UI/live test result.
 
-Publication uses an explicit cancellation/status condition and requires `Verify`
-to succeed. The PR-only dependency-review job is intentionally skipped on main;
-GitHub's default ancestor-success condition must not suppress publication after
-the aggregate gate has accepted that applicable job set. A final main-only
-`Verify publication` job fails when publishing fails or is unexpectedly skipped.
-This corrects the skipped publication observed during WP00.02 post-merge checks.
-See the [GitHub job-dependency rules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds).
+Current automated releases contain Windows and Linux portable development distributions only. Local macOS source/build support is retained; this workflow produces no macOS artifact or runtime claim. Windows binaries are unsigned. Installers, app stores, trusted OS signing and updates are separate delivery features.
 
-The current distributions are portable development builds. Authenticode, Developer ID/notarization, installers, app-store delivery and update signing require separate credentials and implementation before trusted public product distribution.
+A `.sha256` detects corruption; it is not a trusted code signature. Source is the release's exact tag/commit. Existing complete releases remain available as historical artifacts.

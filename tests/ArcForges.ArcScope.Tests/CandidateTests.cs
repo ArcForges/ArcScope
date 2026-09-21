@@ -29,12 +29,10 @@ public sealed class CandidateTests
         Assert.Throws<InvalidOperationException>(() => Program.VerifyCandidate(fixture.Manifest, fixture.Version, fixture.Commit, fixture.SourceRoot));
     }
 
-    [Theory]
-    [InlineData("../outside.zip", true)]
-    [InlineData(null, false)]
-    public void ReleaseRejectsPathEscapeOrFailedLiveEvidence(string? unsafeArchive, bool success)
+    [Fact]
+    public void ReleaseRejectsPathEscape()
     {
-        using var fixture = new CandidateFixture(unsafeArchive, success);
+        using var fixture = new CandidateFixture("../outside.zip");
         Assert.Throws<InvalidOperationException>(() => Program.VerifyCandidate(fixture.Manifest, fixture.Version, fixture.Commit, fixture.SourceRoot));
     }
 
@@ -81,7 +79,7 @@ public sealed class CandidateTests
         public string Manifest => Path.Combine(_folder, "manifest.json");
         public string Archive { get; }
 
-        public CandidateFixture(string? unsafeArchive = null, bool success = true, string rid = "win-x64", string mode = "valid")
+        public CandidateFixture(string? unsafeArchive = null, string rid = "win-x64", string mode = "valid")
         {
             var repo = new DirectoryInfo(AppContext.BaseDirectory);
             while (!File.Exists(Path.Combine(repo.FullName, ProvenancePolicy.Policy))) repo = repo.Parent ?? throw new InvalidOperationException("Repository policy not found.");
@@ -123,22 +121,10 @@ public sealed class CandidateTests
                     tar.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, notice.Key) { DataStream = data });
                 }
             }
-            var smoke = Path.Combine(_folder, "smoke.json");
-            File.WriteAllText(smoke, JsonSerializer.Serialize(new
-            {
-                success,
-                nativeAot = true,
-                rid,
-                sourceRevision = Commit,
-                version = Version,
-                uiGreeting = "Hello, ArcScope!",
-                cloud = new { nativeAot = true },
-                checks = new[] { "native-ui-live-action", "unicode-whitespace-boundary", "InvalidArgument", "ResourceExhausted" }
-            }));
             var hash = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Archive)));
             File.WriteAllText(Archive + ".sha256", $"{hash}  {Path.GetFileName(Archive)}\n");
             File.WriteAllText(Manifest, JsonSerializer.Serialize(new Candidate(rid, Version, Commit,
-                unsafeArchive ?? Path.GetFileName(Archive), hash, Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(smoke))))));
+                unsafeArchive ?? Path.GetFileName(Archive), hash)));
         }
 
         public void Dispose() => Directory.Delete(_folder, true);
