@@ -26,6 +26,7 @@ public static partial class Program
                     await Run("git", ["config", "--worktree", "core.hooksPath", ".githooks"]);
                     break;
                 case ["check"]: await Check(); break;
+                case ["verify-assemblies"]: IdentityEvidence.VerifyAssemblies(Directory.GetCurrentDirectory()); break;
                 case ["provenance-notice"]: await ProvenancePolicy.Check(Directory.GetCurrentDirectory(), writeNotice: true); break;
                 case ["version"]:
                     var generatedVersion = Version(Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER") ?? "0", Environment.GetEnvironmentVariable("GITHUB_RUN_ATTEMPT") ?? "1");
@@ -107,6 +108,9 @@ public static partial class Program
         ProvenancePolicy.VerifyPackageNotices(requiredNotices, path => File.Exists(Path.Combine(stage, path)) ? File.ReadAllBytes(Path.Combine(stage, path)) : null);
         File.Copy("artifacts/evidence/provenance.json", Path.Combine(stage, "notices/provenance-source.json"));
         if (!File.Exists(Executable(rid))) throw new InvalidOperationException("Published executable is missing.");
+        await Run(Executable(rid), ["--build-info", "--evidence", Path.Combine(stage, "build-identity.json")]);
+        IdentityEvidence.Verify(File.ReadAllBytes(Path.Combine(stage, "build-identity.json")), Directory.GetCurrentDirectory(), version,
+            (await Capture("git", ["rev-parse", "HEAD"])).Trim());
         if (rid.StartsWith("osx-", StringComparison.Ordinal))
         {
             var parts = version.Split('.');
@@ -191,7 +195,7 @@ public static partial class Program
             using var gzip = new GZipStream(file, CompressionLevel.Optimal);
             TarFile.CreateFromDirectory(Stage(rid), gzip, false);
         }
-        VerifyArchiveNotices(archive, commit, Directory.GetCurrentDirectory());
+        VerifyArchiveNotices(archive, commit, Directory.GetCurrentDirectory(), version);
         File.Copy(evidence, Path.Combine(folder, "smoke.json"));
         File.Copy(Path.ChangeExtension(evidence, ".png"), Path.Combine(folder, "screen.png"));
         var manifest = new Candidate(rid, version, commit, name, Hash(archive), Hash(evidence));
@@ -217,11 +221,11 @@ public static partial class Program
             throw new InvalidOperationException("Download checksum mismatch.");
         using var evidence = JsonDocument.Parse(File.ReadAllText(smoke));
         ValidateSmoke(evidence.RootElement, manifest.Rid, version, commit);
-        VerifyArchiveNotices(archive, commit, sourceRoot ?? Directory.GetCurrentDirectory());
+        VerifyArchiveNotices(archive, commit, sourceRoot ?? Directory.GetCurrentDirectory(), version);
         return manifest.Rid;
     }
 
-    private static void VerifyArchiveNotices(string archive, string commit, string sourceRoot)
+    private static void VerifyArchiveNotices(string archive, string commit, string sourceRoot, string version)
     {
         var expected = ProvenancePolicy.PackageNotices(sourceRoot);
         const string receiptName = "notices/provenance-source.json";
@@ -235,7 +239,7 @@ public static partial class Program
             if (path.StartsWith('/') || path.IndexOfAny(['\\', ':', '\0']) >= 0 || path.Split('/').Any(p => p is "" or "." or ".."))
                 throw new InvalidOperationException("Escaping archive member: " + path);
             if (!members.Add(path)) throw new InvalidOperationException("Duplicate or case-colliding archive member: " + path);
-            if (!expected.ContainsKey(path) && path != receiptName) return;
+            if (!expected.ContainsKey(path) && path != receiptName && path != "build-identity.json") return;
             if (stream is null) throw new InvalidOperationException("Required notice is not a regular archive file: " + path);
             using var memory = new MemoryStream();
             stream.CopyTo(memory);
@@ -265,6 +269,8 @@ public static partial class Program
             }
         }
         ProvenancePolicy.VerifyPackageNotices(expected, path => selected.GetValueOrDefault(path));
+        if (!selected.TryGetValue("build-identity.json", out var identity)) throw new InvalidOperationException("Missing packaged runtime build identity.");
+        IdentityEvidence.Verify(identity, sourceRoot, version, commit);
         if (!selected.TryGetValue(receiptName, out var receipt)) throw new InvalidOperationException("Missing candidate source provenance.");
         using var report = JsonDocument.Parse(receipt);
         if (report.RootElement.GetProperty("sourceCommit").GetString() != commit ||

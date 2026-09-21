@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
+  </ItemGroup>
   <PropertyGroup>
     <LicenceBoundary>AGPL</LicenceBoundary>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>

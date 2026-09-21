@@ -11,6 +11,13 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args is ["--build-info", "--evidence", var output])
+        {
+            var path = Path.GetFullPath(output);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, BuildIdentity.FromAssembly(typeof(Program).Assembly).ToJsonString() + "\n");
+            return 0;
+        }
         string? evidence = null;
         if (args.Length != 0)
         {

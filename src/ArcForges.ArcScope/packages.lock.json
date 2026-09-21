@@ -4,9 +4,19 @@
     "net10.0": {
       "ArcForges.Build.Policy": {
         "type": "Direct",
-        "requested": "[1.0.0-ci.7.1, )",
-        "resolved": "1.0.0-ci.7.1",
-        "contentHash": "GWH92jk3DiL470LAjYA0O4TZzh26cmqIk6KROuXdbY03zz2FaUui6YC0ty7515RC8dreP6wLBief5sC+XoGwvQ=="
+        "requested": "[1.0.0-ci.20.1, )",
+        "resolved": "1.0.0-ci.20.1",
+        "contentHash": "rGn/WwyV9sq38y9rlQGX9gLBqy93XOgHmUSKJ2AupR6DDfVHTHgZVwnhfGL1K9XJkRKV972GV/dFcLersJ5iVw=="
+      },
+      "ArcForges.Contracts.PublicApi": {
+        "type": "Direct",
+        "requested": "[1.0.0-ci.36.1, )",
+        "resolved": "1.0.0-ci.36.1",
+        "contentHash": "4+pUDeDcOScTV5rEei5yri8CLvVb9309Zdl5TBcVKXBvFrowcOoPx5pkZmpqzcLQZAZ2LH6LVv8JCGURpf42zQ==",
+        "dependencies": {
+          "Google.Protobuf": "3.36.1",
+          "Grpc.Core.Api": "2.83.0"
+        }
       },
       "Avalonia.Desktop": {
         "type": "Direct",
@@ -515,16 +525,6 @@
           "ArcForges.Contracts.PublicApi": "[1.0.0-ci.36.1, )",
           "Grpc.Net.Client": "[2.83.0, )",
           "Grpc.Net.Client.Web": "[2.83.0, )"
-        }
-      },
-      "ArcForges.Contracts.PublicApi": {
-        "type": "CentralTransitive",
-        "requested": "[1.0.0-ci.36.1, )",
-        "resolved": "1.0.0-ci.36.1",
-        "contentHash": "4+pUDeDcOScTV5rEei5yri8CLvVb9309Zdl5TBcVKXBvFrowcOoPx5pkZmpqzcLQZAZ2LH6LVv8JCGURpf42zQ==",
-        "dependencies": {
-          "Google.Protobuf": "3.36.1",
-          "Grpc.Core.Api": "2.83.0"
         }
       },
       "Grpc.Net.Client": {

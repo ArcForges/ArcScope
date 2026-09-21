@@ -15,7 +15,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <ProjectReference Include="../ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
-    <AssemblyMetadata Include="SourceRevision" Value="$(SourceRevisionId)" />
+    <PackageReference Include="ArcForges.Contracts.PublicApi" GeneratePathProperty="true" />
+    <EmbeddedResource Include="../../eng/version-sources.json" LogicalName="ArcScope.VersionSources" />
+    <EmbeddedResource Include="packages.lock.json" LogicalName="ArcScope.PackageLock" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/source.json" LogicalName="ArcScope.ContractsSource" />
   </ItemGroup>
   <PropertyGroup>
     <LicenceBoundary>AGPL</LicenceBoundary>

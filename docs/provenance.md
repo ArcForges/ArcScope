@@ -32,7 +32,7 @@ After reviewing record/inventory changes, update the summary using
 `dotnet run --project eng/ArcForges.Repository -- provenance-notice`, then run all
 checks in `CONTRIBUTING.md`. Reports are retained under `artifacts/evidence`.
 
-The source record for current tooling binds four files from reviewed ArcNotes
+The original WP00.03 tooling record bound four files from reviewed ArcNotes
 `e40423a1b14ce8341de35748cc2a093c7c9b77a7`, with only explicit product identity
 substitutions. AGPL terms and the original Apache checker attribution/full licence
 are preserved. This creates no sibling-source build dependency or new tooling runtime.
@@ -48,3 +48,5 @@ All five native RID, Native AOT, real UI/live Cloud and publication gates remain
 required. Deterministic checks, local Windows execution, hosted native results and
 public release verification are separate evidence. They do not claim complete product
 features, trusted OS signing or later commercial acceptance.
+
+WP02.04 supersedes the tooling record with `arcnotes-provenance-tools-r2`: the reviewed ArcNotes merge `0c797e30690a10d8798ddca19ca7f37b16cecf01` supplies compiled identity and independent source resolution. The immutable r1 remains. The record binds every adapted file and the product-specific future format/storage declarations. Runtime support code is covered by the full AGPL licence and origin/source pointer included in portable README; checker-only Apache terms stay with corresponding source.

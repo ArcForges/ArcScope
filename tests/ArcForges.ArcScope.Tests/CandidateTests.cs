@@ -55,6 +55,8 @@ public sealed class CandidateTests
     [InlineData("win-x64", "dirty")]
     [InlineData("win-x64", "case-collision")]
     [InlineData("win-x64", "escape")]
+    [InlineData("win-x64", "missing-identity")]
+    [InlineData("win-x64", "changed-identity")]
     [InlineData("linux-x64", "missing")]
     [InlineData("linux-x64", "changed")]
     [InlineData("linux-x64", "duplicate")]
@@ -62,6 +64,8 @@ public sealed class CandidateTests
     [InlineData("linux-x64", "dirty")]
     [InlineData("linux-x64", "case-collision")]
     [InlineData("linux-x64", "escape")]
+    [InlineData("linux-x64", "missing-identity")]
+    [InlineData("linux-x64", "changed-identity")]
     public void MatchingOuterHashesCannotHideMissingLegalTextOrWrongSource(string rid, string mode)
     {
         using var fixture = new CandidateFixture(rid: rid, mode: mode);
@@ -72,7 +76,7 @@ public sealed class CandidateTests
     {
         private readonly string _folder = Path.Combine(Path.GetTempPath(), "arcscope-test-" + Guid.NewGuid());
         public string Version => "0.1.0-ci.23.1";
-        public string Commit => new('a', 40);
+        public string Commit => IdentityEvidence.Git(SourceRoot, "rev-parse", "HEAD");
         public string SourceRoot { get; }
         public string Manifest => Path.Combine(_folder, "manifest.json");
         public string Archive { get; }
@@ -86,6 +90,14 @@ public sealed class CandidateTests
             Directory.CreateDirectory(_folder);
             var entries = ProvenancePolicy.PackageNotices(SourceRoot).Select(n => (n.Key, n.Value)).ToList();
             entries.Add(("notices/provenance-source.json", Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { result = "passed", sourceCommit = mode == "wrong-source" ? new string('b', 40) : Commit, dirty = mode == "dirty" }))));
+            entries.Add(("build-identity.json", Encoding.UTF8.GetBytes(IdentityEvidence.ExpectedReport(SourceRoot, Version, Commit).ToJsonString())));
+            if (mode == "missing-identity") entries.RemoveAll(e => e.Key == "build-identity.json");
+            if (mode == "changed-identity")
+            {
+                var changed = IdentityEvidence.ExpectedReport(SourceRoot, Version, Commit);
+                changed["axes"]!["ContractSet"]!["values"]![0]!["version"] = "36";
+                entries[entries.FindIndex(e => e.Key == "build-identity.json")] = ("build-identity.json", Encoding.UTF8.GetBytes(changed.ToJsonString()));
+            }
             if (mode == "missing") entries.RemoveAll(e => e.Key == "LICENSE");
             if (mode == "changed") entries[entries.FindIndex(e => e.Key == "LICENSE")] = ("LICENSE", Encoding.UTF8.GetBytes("abbreviated licence\n"));
             if (mode == "duplicate") entries.Add(entries.Single(e => e.Key == "LICENSE"));
