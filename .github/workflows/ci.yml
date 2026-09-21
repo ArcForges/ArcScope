@@ -57,6 +57,7 @@ jobs:
       - run: dotnet restore ArcScope.slnx --locked-mode
       - run: dotnet format ArcScope.slnx --verify-no-changes --no-restore
       - run: dotnet build ArcScope.slnx -c Release --no-restore
+      - run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify-assemblies
       - run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check
       - name: Set immutable version
         id: version

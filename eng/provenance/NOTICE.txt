@@ -2,14 +2,14 @@ ArcForges source provenance notices
 
 Generated from reviewed active records. Original licence files and dependency notices remain authoritative.
 
-arcnotes-provenance-tools-r1
-Source: https://github.com/ArcForges/ArcNotes @ e40423a1b14ce8341de35748cc2a093c7c9b77a7
+arcnotes-provenance-tools-r2
+Source: https://github.com/ArcForges/ArcNotes @ 0c797e30690a10d8798ddca19ca7f37b16cecf01
 Material licence: AGPL-3.0-only
 Notice scope: source
-Copyright ArcForges contributors. Current C# tooling/tests: AGPL-3.0-only.
-Original provenance checker from Contracts: Apache-2.0; full text in eng/third-party/LICENSE.Contracts.txt.
-ArcScope adaptation changes product identity literals only; the current owner remains independently built.
-Copyright ArcForges contributors. AGPL-3.0-only current C# tooling, preserving the original Contracts Apache-2.0 attribution and full terms. ArcScope changes only owner identity literals.
+Copyright ArcForges contributors. ArcNotes support identity and tooling: AGPL-3.0-only.
+Original provenance checker from Contracts: Apache-2.0; complete source terms and attribution retained.
+ArcScope adapts product identity and future format/storage owner declarations.
+Copyright ArcForges contributors. ArcScope adapts ArcNotes WP02.04 support identity under AGPL-3.0-only; original Apache checker attribution is retained.
 
 canonical-agpl-legal-r1
 Source: https://github.com/github/choosealicense.com @ 58267f8f2c5c0099810849cfd7677f52ae0c0eb3

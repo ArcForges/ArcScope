@@ -16,7 +16,7 @@ dotnet run --project src/ArcForges.ArcScope
 dotnet run --project eng/ArcForges.Repository -- hooks
 ```
 
-The UI, application state and repository tool are C#. Avalonia/Skia supply packaged native UI/rendering dependencies. The application consumes `ArcForges.Contracts.PublicApi` **1.0.0-ci.36.1** and the private build-time `ArcForges.Build.Policy` **1.0.0-ci.7.1**. It does not ship unused DesktopPlatform media engines.
+The UI, application state and repository tool are C#. Avalonia/Skia supply packaged native UI/rendering dependencies. The application consumes `ArcForges.Contracts.PublicApi` **1.0.0-ci.36.1** and the private build-time `ArcForges.Build.Policy` **1.0.0-ci.20.1**. It does not ship unused DesktopPlatform media engines.
 
 ## Downloads and automation
 
@@ -42,3 +42,5 @@ the effective MSBuild declarations and local project references.
 release verification also checks the actual archived notices and source receipt.
 
 Read [CONTRIBUTING](CONTRIBUTING.md), [security reporting](SECURITY.md) and the [code of conduct](CODE_OF_CONDUCT.md). ArcScope remains **AGPL-3.0-only**; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+Offline support metadata is available through `--build-info --evidence <path.json>`. See [build identity](docs/build-identity.md). Its implementation adapts [ArcNotes 0c797e3](https://github.com/ArcForges/ArcNotes/tree/0c797e30690a10d8798ddca19ca7f37b16cecf01) under AGPL-3.0-only; the full corresponding source and reviewed origin records are retained at this release’s Git commit.

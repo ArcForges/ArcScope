@@ -1,5 +1,24 @@
 <Project>
   <!-- SPDX-License-Identifier: AGPL-3.0-only -->
+  <Target Name="ArcScopeResolveSourceIdentity" BeforeTargets="ArcForgesStampBuildIdentity">
+    <Exec Command="git rev-parse HEAD" WorkingDirectory="$(MSBuildThisFileDirectory)" ConsoleToMSBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_ArcScopeCommit" />
+    </Exec>
+    <Exec Command="git status --porcelain" WorkingDirectory="$(MSBuildThisFileDirectory)" ConsoleToMSBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_ArcScopeChanges" />
+    </Exec>
+    <Error Condition="'$(SourceRevisionId)' != '' and '$(SourceRevisionId)' != '$(_ArcScopeCommit)'" Text="AFB001: Declared source differs from the actual checkout." />
+    <PropertyGroup>
+      <SourceRevisionId>$(_ArcScopeCommit)</SourceRevisionId>
+      <ArcForgesSourceCommit>$(_ArcScopeCommit)</ArcForgesSourceCommit>
+      <_ArcScopeDirty>false</_ArcScopeDirty>
+      <_ArcScopeDirty Condition="'$(_ArcScopeChanges)' != ''">true</_ArcScopeDirty>
+    </PropertyGroup>
+    <Error Condition="'$(GITHUB_ACTIONS)' == 'true' and '$(_ArcScopeDirty)' != 'false'" Text="AFB001: CI source must be clean." />
+    <ItemGroup>
+      <AssemblyMetadata Include="ArcForges.Dirty" Value="$(_ArcScopeDirty)" />
+    </ItemGroup>
+  </Target>
   <Target Name="ArcForgesGetLicenceBoundary" Returns="@(_ArcForgesLicenceDeclaration)">
     <ItemGroup>
       <_ArcForgesLicenceDeclaration Include="$(MSBuildProjectFullPath)">

@@ -23,7 +23,7 @@ internal static class LiveSmoke
             NativeAot = !RuntimeFeature.IsDynamicCodeSupported,
             Rid = RuntimeInformation.RuntimeIdentifier,
             SourceRevision = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "SourceRevision").Value ?? "unknown",
+                .Single(a => a.Key == "ArcForges.SourceCommit").Value ?? "unknown",
             Version = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]
         };
         Directory.CreateDirectory(Path.GetDirectoryName(evidence)!);
