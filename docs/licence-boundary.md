@@ -14,14 +14,15 @@ from the owner's SPDX declaration; the existing distribution notices are retaine
 
 `Directory.Build.targets` also checks effective MSBuild properties before build
 and pack, so an imported or command-line override cannot bypass source checks.
-The inventory test runs in every native CI job. It writes the source commit,
+The inventory test runs once in the Linux CI job. It writes the source commit,
 dirty state, evaluated MSBuild declarations, reference edges and complete project list to
-`artifacts/evidence/licence-boundary.json`, retained with the existing UI evidence.
+`artifacts/evidence/licence-boundary.json`, retained as build evidence, without UI screenshots.
 Adversarial C# tests exercise declaration, inventory, import, reference and lock
-failures. The existing locked restore, format, build, tests, five-RID Native AOT
-UI/live-Cloud checks and immutable candidate verification remain required.
+failures. Locked restore, format, offline unit tests, three Windows/Linux Native AOT builds
+and one publication candidate identity/integrity check remain required. UI/live tests
+are explicit local opt-in; macOS CI and repeated public-asset verification are prohibited.
 
 This change preserves published dependency versions, application identity,
 signing behavior and product scope. A policy pass does not prove product readiness
-or close a later commercial-release gate. Current runs and post-merge assets must
-be verified for their exact source commit.
+or close a later commercial-release gate. Post-merge checks confirm the expected source commit and required publication result;
+they do not download or execute public assets.

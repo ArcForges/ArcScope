@@ -34,10 +34,6 @@ jobs:
             rid: win-arm64
           - os: ubuntu-24.04
             rid: linux-x64
-          - os: macos-15-intel
-            rid: osx-x64
-          - os: macos-15
-            rid: osx-arm64
     defaults:
       run:
         shell: bash
@@ -53,17 +49,24 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang zlib1g-dev libx11-6 libice6 libsm6 libfontconfig1 xvfb fonts-dejavu-core
+          sudo apt-get install -y clang zlib1g-dev
       - run: dotnet restore ArcScope.slnx --locked-mode
-      - run: dotnet format ArcScope.slnx --verify-no-changes --no-restore
+      - name: Check formatting once
+        if: runner.os == 'Linux'
+        run: dotnet format ArcScope.slnx --verify-no-changes --no-restore
       - run: dotnet build ArcScope.slnx -c Release --no-restore
-      - run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify-assemblies
-      - run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check
+      - name: Run verify-assemblies once
+        if: runner.os == 'Linux'
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify-assemblies
+      - name: Run check once
+        if: runner.os == 'Linux'
+        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check
       - name: Set immutable version
         id: version
         run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
-      - name: Run deterministic tests
-        run: dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build
+      - name: Run offline unit tests once
+        if: runner.os == 'Linux'
+        run: dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build --filter-not-class '*.TransportTests'
       - name: Compile Native AOT executable
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
@@ -74,16 +77,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
           TARGET_RID: ${{ matrix.rid }}
         run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- prepare "$TARGET_RID" "$PACKAGE_VERSION"
-      - name: Run native UI and live Cloud checks
-        env:
-          TARGET_RID: ${{ matrix.rid }}
-        run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -a dotnet run --project eng/ArcForges.Repository -c Release --no-build -- smoke "$TARGET_RID"
-          else
-            dotnet run --project eng/ArcForges.Repository -c Release --no-build -- smoke "$TARGET_RID"
-          fi
-      - name: Pack the verified native directory
+      - name: Pack the compiled native directory
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
           TARGET_RID: ${{ matrix.rid }}
@@ -191,24 +185,6 @@ jobs:
           test "$QUALITY" = success
           test "$CODEQL" = success
           if [ "$EVENT" = pull_request ]; then test "$DEPENDENCIES" = success; else test "$DEPENDENCIES" = skipped; fi
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
-        with:
-          global-json-file: global.json
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          pattern: arcscope-candidate-*-${{ github.run_id }}-${{ github.run_attempt }}
-          path: artifacts/download
-      - run: dotnet restore eng/ArcForges.Repository --locked-mode
-      - run: dotnet build eng/ArcForges.Repository -c Release --no-restore
-      - id: version
-        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
-      - name: Rehearse the complete release verification before merge
-        env:
-          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify artifacts/download "$PACKAGE_VERSION" "$GITHUB_SHA"
 
   release:
     name: Publish portable release
@@ -237,7 +213,7 @@ jobs:
       - run: dotnet build eng/ArcForges.Repository -c Release --no-restore
       - id: version
         run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- version
-      - name: Verify immutable candidates
+      - name: Check candidate integrity once at publication handoff
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
         run: dotnet run --project eng/ArcForges.Repository -c Release --no-build -- verify artifacts/download "$PACKAGE_VERSION" "$GITHUB_SHA"
@@ -250,7 +226,7 @@ jobs:
           tag="v$PACKAGE_VERSION"
           gh release create "$tag" --target "$GITHUB_SHA" --title "ArcScope $PACKAGE_VERSION" --draft --prerelease --notes-file docs/release-notes.md
           mapfile -d '' assets < <(find artifacts/download -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.sha256' \) -print0)
-          test "${#assets[@]}" = 10
+          test "${#assets[@]}" = 6
           gh release upload "$tag" "${assets[@]}"
           tar --exclude='*.zip' --exclude='*.tar.gz' --exclude='*.sha256' -czf artifacts/arcscope-verification.tar.gz -C artifacts/download .
           gh release upload "$tag" artifacts/arcscope-verification.tar.gz

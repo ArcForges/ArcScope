@@ -1,7 +1,7 @@
-Native AOT ArcScope Hello desktop client connected to `https://arcforges.com/api`.
+# ArcScope development prerelease
 
-Download the complete portable archive matching your OS and CPU, verify its SHA-256, and extract all files together. No .NET runtime installation or service token is needed. Windows: run `ArcScope.exe`. Linux: run `./ArcScope` in an X11/XWayland desktop with the documented system libraries. macOS: the archive contains `ArcScope.app`.
+Extract the complete Windows x64/ARM64 ZIP or Linux x64 tar.gz and keep its files together. No .NET runtime installation or service token is needed. Windows: run `ArcScope.exe`. Linux: run `./ArcScope` in an X11/XWayland desktop with the documented system libraries.
 
-These are development prereleases. Windows binaries are unsigned; macOS bundles have ad-hoc signing only, with no Developer ID/notarization. Installer, store and automatic-update delivery are not included.
+These are portable development builds. Windows binaries are unsigned; installer, store and automatic-update delivery are not included. This release has no macOS artifact.
 
-All five native candidates passed deterministic tests and programmatic native UI/live Cloud checks before this release was published. `arcscope-verification.tar.gz` contains source/RID/version manifests, live check results and rendered window images. The source is the commit referenced by this release tag. See the README at that tag for prerequisites and licence notices.
+The candidates passed Windows/Linux compilation and the applicable offline/static/security checks. CI does not launch applications or perform UI/live Cloud tests. `arcscope-verification.tar.gz` contains build source/RID/version manifests, not runtime proof or screenshots. The source is the commit referenced by this release tag. Checksum sidecars support optional integrity diagnostics and are not trusted code signatures. See the README at that tag for prerequisites and licence notices.

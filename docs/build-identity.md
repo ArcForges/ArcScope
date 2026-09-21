@@ -15,15 +15,19 @@ actual dirty state and reject source mismatches. The build identity contains the
 full commit, local/CI kind, run/attempt, pipeline URL and Git source timestamp.
 Contracts remains pinned to 1.0.0-ci.36.1, whose Hello contract major is 1.
 
-Preparation runs the real AOT binary and verifies its identity against independent
-Git/run/release and restored dependency inputs. Portable archives retain that report;
-verification rejects internal changes even with recomputed outer hashes. Existing
-five-native-host UI and live Cloud checks remain mandatory. `verify-assemblies`
-inspects the actual PE metadata of the app, core, tests and C# repository tool.
+The repository tool statically reads actual app/core/test/tool PE metadata once.
+Preparation writes `build-identity.json` from the reviewed Git/run/release, restored
+dependency and committed source inputs without launching the AOT app. This packaged
+build-input receipt is not runtime execution evidence. The app's explicit local
+`--build-info` command remains available for relevant support diagnostics.
+Publication checks candidate identity and legal/source integrity once. CI has three
+Windows/Linux compilation targets, no macOS/UI/live execution and no routine public
+archive download or runtime verification cycle.
 
 The source adaptation and immutable predecessor are recorded in
 `eng/provenance/records/arcnotes-provenance-tools-r2.json`. Tests exercise independent
 mutations of all nine source kinds, malformed/aliased/missing sources and tampered
-build/archives. Synthetic declarations validate mechanisms only. Public artifacts
-and runtime results must be verified separately for ArcScope; these foundation
-reports do not establish commercial instrument workflows or future compatibility.
+build/archives. Synthetic declarations validate mechanisms only. Any optional local runtime observation must identify the actual artifact tested;
+these foundation reports do not establish commercial instrument workflows or future compatibility.
+
+The r3 provenance successor retains r1/r2 and records the CI/release reduction without changing the original runtime implementation or dependency pins.

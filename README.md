@@ -11,7 +11,7 @@ Install .NET SDK **10.0.401** and the native build prerequisites in [development
 ```sh
 dotnet restore ArcScope.slnx --locked-mode
 dotnet build ArcScope.slnx -c Release --no-restore
-dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build
+dotnet test --project tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj -c Release --no-build --filter-not-class '*.TransportTests'
 dotnet run --project src/ArcForges.ArcScope
 dotnet run --project eng/ArcForges.Repository -- hooks
 ```
@@ -20,17 +20,16 @@ The UI, application state and repository tool are C#. Avalonia/Skia supply packa
 
 ## Downloads and automation
 
-Each successful main push publishes a prerelease `v0.1.0-ci.<run>.<attempt>` to [GitHub Releases](https://github.com/ArcForges/ArcScope/releases). PRs build and test the same five Native AOT targets but never publish a release:
+Each successful main push publishes a prerelease `v0.1.0-ci.<run>.<attempt>` to [GitHub Releases](https://github.com/ArcForges/ArcScope/releases). PRs compile the same three Windows/Linux Native AOT targets and run offline checks but never publish a release:
 
 | Platform | Archive |
 | --- | --- |
 | Windows x64 / ARM64 | Portable ZIP; extract everything and run `ArcScope.exe` |
 | Linux x64 | Portable tar.gz; extract everything and run `./ArcScope` in an X11/XWayland desktop |
-| macOS Intel / Apple Silicon | tar.gz containing `ArcScope.app` and notices |
 
-Keep all files together. These self-contained builds do not require a .NET installation. They are development distributions: Windows binaries are unsigned and macOS bundles are ad-hoc signed, not Developer ID signed or notarized. No installer, app-store identity or OS trust claim is included. Linux system libraries are listed in [development](docs/development.md). Source for a release is its exact Git tag/commit.
+Keep all files together. These self-contained builds do not require a .NET installation. They are development distributions: Windows binaries are unsigned. Automated releases do not contain macOS builds; local macOS source support remains available without CI or release claims. No installer, app-store identity or OS trust claim is included. Linux system libraries are listed in [development](docs/development.md). Source for a release is its exact Git tag/commit.
 
-CI verifies the native window, UI action, live greeting, Unicode/boundaries, gRPC status and backend revision on each native host before packaging. `--smoke-live --evidence <absolute-path.json>` is an explicit network-using validation mode that closes the window afterward; it is not normal startup. See [release mechanics](docs/releasing.md) and [bootstrap plan/evidence](docs/bootstrap-plan.md).
+CI performs compilation, packaging, offline unit/static checks and security scanning. It does not launch packaged applications, native UI or live Cloud requests. Runtime smoke is an explicit local-only command when needed; no post-publication asset download or runtime cycle is required. See [release mechanics](docs/releasing.md) and the [validation policy](https://github.com/ArcForges/ArcForges-Design/blob/47db6670a727317939b91245e8c0b288834acf99/docs/assurance/ci-and-local-validation-policy.md).
 
 ## Contribute and report issues
 
