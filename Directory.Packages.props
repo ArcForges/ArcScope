@@ -2,6 +2,7 @@
   <!-- SPDX-License-Identifier: AGPL-3.0-only -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="ArcForges.Build.Policy" Version="1.0.0-ci.7.1" />
