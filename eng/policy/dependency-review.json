@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "owner": "ArcScope",
+  "decision": "approved",
+  "reviewedOn": "2026-09-21",
+  "baselineCommit": "8316d0bded118b0a76223c35cd42d7b1096b6104",
+  "baselineFrameworkVersions": {
+    "dotnet": "10.0.401",
+    "avalonia": "12.1.2"
+  },
+  "frameworkMajorUpgrade": false,
+  "runtimePostureAssessment": "No framework version changes: existing desktop Native AOT and trim posture retained.",
+  "checks": {
+    "compilation": "Retain required Windows/Linux compilation in the existing CI graph.",
+    "aot": "Retain Windows x64/ARM64 and Linux x64 AOT publication; no runtime graph changed.",
+    "compatibility": "No package versions, APIs or generated public contracts changed; prior WP02 stage evidence retained.",
+    "licence": "Complete locked closure and published cached metadata reviewed; existing source/native notices and provenance gates retained.",
+    "security": "Existing dependency-review and CodeQL gates remain required; no duplicated scanner or vulnerability-free assertion.",
+    "sbom": "Existing portable dependencies.json is generated from actual restore assets; no distributed closure changed.",
+    "localRuntime": "Not run: dependency policy tooling changes do not affect application runtime behavior.",
+    "performance": "Not applicable: no runtime dependency, executable behavior or performance-sensitive algorithm changed.",
+    "migration": "Not applicable: no persistence format or storage dependency changed."
+  },
+  "inputs": {
+    ".github/workflows/ci.yml": "e09784399a68bfbe136297ca55a72558ccdd62b0b81dd21ce3bfaf41fdf8b85f",
+    "Directory.Build.props": "9d567c843c8af63df502a0a1752767d183a1db2a7e52ebd2690c7edbbae008eb",
+    "Directory.Build.targets": "ff01198f816a04667ade99836d5b57e0fb78067972d2c852f2e8c1e8eea3f138",
+    "Directory.Packages.props": "ef826d5a6865882ae44e02c03a21e2d94e3146a2027a22bdbc6a558aac260321",
+    "NuGet.Config": "4b8c02e4d50d3cc41197afc609f592e5a1889c049fe39147564e2811c5d8e261",
+    "eng/ArcForges.Repository/ArcForges.Repository.csproj": "b8b811d878528c9fcff4e37fa4acd46ea5ce08221ff782183d201daffd010e33",
+    "eng/ArcForges.Repository/packages.lock.json": "3c1917c46723808336fbacfb5fd40d3c6ae7854ddd3b05ba03100cd759a569af",
+    "eng/policy/dependency-policy.json": "f35ff83423ddc7be767ef5ada65295e065c2b8c2b80665bdb029087c3615194f",
+    "eng/policy/licence-boundary.json": "a742df60c4dfcad5f72da6b8312795d69b8d42894b0ef871eafb58732c4629be",
+    "eng/policy/reuse-policy.json": "efd435e1a5b41a6b1ff29e5b6472553616eb5bf88f710616e83549c86d24a788",
+    "global.json": "d533441ee720f55065ffdda4273cd815f53f534612cd5899bd4b9b41d0e3a630",
+    "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj": "2338d20f00790d79a717e3ed74cfd79de26204d428eda618247558d84f776f3d",
+    "src/ArcForges.ArcScope.Core/packages.lock.json": "2d4085d38648181c42333b905a7d57bff5b5faee5a35e777c05f16cf2b3c6142",
+    "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj": "5969080e16a982fbdf6d8eb887ec5fd8fc378824c0e9bf10e55503e851a5f188",
+    "src/ArcForges.ArcScope/packages.lock.json": "dc79f1c07fb844855eb1adb5be6ff3d3e988310fd3173f7f2235283b584b6a2b",
+    "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj": "9d411d5f46d36903fa34592abe0d5977b81b10b215519cc5c5cecc53320fea48",
+    "tests/ArcForges.ArcScope.Tests/packages.lock.json": "efd69fa9e197997dd8c0009599826055ca655c9922da4abd4865de7f02d15907",
+    "third-party/sources.json": "106696f712f9574d0e5521337c954bdb936ee3e30901a7aab1f2d569bed548f6"
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "id": "arcnotes-provenance-tools-r4",
+  "kind": "source",
+  "sourceRepository": "https://github.com/ArcForges/ArcNotes",
+  "sourceCommit": "b7358bd7b1dca0671cd51cf6d798d5c09911b198",
+  "sourcePaths": [
+    "eng/ArcForges.Repository/ProvenancePolicy.cs",
+    "eng/ArcForges.Repository/Program.cs",
+    "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+    "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs",
+    "eng/ArcForges.Repository/IdentityEvidence.cs",
+    "src/ArcForges.ArcNotes.Core/BuildIdentity.cs",
+    "tests/ArcForges.ArcNotes.Tests/BuildIdentityTests.cs",
+    "Directory.Build.targets",
+    "Directory.Build.props",
+    "Directory.Packages.props",
+    "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+    "src/ArcForges.ArcNotes/ArcForges.ArcNotes.csproj",
+    "src/ArcForges.ArcNotes/Program.cs",
+    "src/ArcForges.ArcNotes/LiveSmoke.cs",
+    ".github/workflows/ci.yml",
+    "eng/version-sources.json",
+    "eng/ArcForges.Repository/DependencyPolicy.cs",
+    "docs/dependency-policy.md",
+    "eng/policy/dependency-policy.json",
+    "tests/ArcForges.ArcNotes.Tests/DependencyPolicyTests.cs",
+    "eng/policy/dependency-review.json"
+  ],
+  "licence": {
+    "spdx": "AGPL-3.0-only",
+    "category": "agpl-compatible",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+        "sha256": "0da29d6f3cd9656640276d27eab25ee38fec68809d4dcc68ef3c1ad96ec1f3b9",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/ArcForges.Repository/Program.cs",
+        "sha256": "dba5e6b75593631d55418998f7791190933b88b62f646e4c0e3f2a9d38b461ac",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+        "sha256": "286437bd06ea7dd22e58f2007e2b75ab7aa4264595ff1d548b9953adeb6bca69",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs",
+        "sha256": "f0cc9fce799ff27519689d60b27667f679e21720a2531688566b97d99dc029f2",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/ArcForges.Repository/IdentityEvidence.cs",
+        "sha256": "73510ff86c7b6e5b86baeebd95a7df2c7cb355531a265e2a20b67bdcf39e3215",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "src/ArcForges.ArcNotes.Core/BuildIdentity.cs",
+        "sha256": "2a1c184214d4b5c49e4f1affa96cc5741d1c1b34b3892477e0c97d31eccb5bc5",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/BuildIdentityTests.cs",
+        "sha256": "ae11ceb972227aa8e0cc810852e42ffdeebc71493cd07546a59d752ceeb0c444",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "Directory.Build.targets",
+        "sha256": "21da49619dc407ca9de526c9aa75cb9a0e67ca6314bddd4770dd165975405bd4",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "Directory.Build.props",
+        "sha256": "90a5954ec7685904894ef8d19fea650f9bcebabbde98b0b94058f8b7c68fb5a4",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "Directory.Packages.props",
+        "sha256": "ef826d5a6865882ae44e02c03a21e2d94e3146a2027a22bdbc6a558aac260321",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+        "sha256": "b80fff54a4c877998e66b035a159e790bce4c771244d1d239fa8d58c8dd589a6",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "src/ArcForges.ArcNotes/ArcForges.ArcNotes.csproj",
+        "sha256": "4a4bb4fb53401da31b2f2aafd96f5c733a78f08c60632f717eeb8b8e1eaabdba",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "src/ArcForges.ArcNotes/Program.cs",
+        "sha256": "f763a3e5e5db240cb18478dc733db84fbaae03c1276396ebb8302ed1349078a7",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "src/ArcForges.ArcNotes/LiveSmoke.cs",
+        "sha256": "0250c74301c91e79dde029788c06cfd9b1307cee519848458650aeb4ec2cb399",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "ec5963a454ab794847a07fd4360fd1708b3aef44385b4eeafd3d0137366ec1ab",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/version-sources.json",
+        "sha256": "381adf427140f65717901bb81dff340511831e7414a31eec897e4eb6ef9535f5",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/ArcForges.Repository/DependencyPolicy.cs",
+        "sha256": "7bd25806398f343764b190e60c3c13fea45210b2aee31fb7f53422b4fb1fc197",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "docs/dependency-policy.md",
+        "sha256": "c2c87a4a8b6402abb1aa82060431b33efc66bbfba09635b58c03fbb6e120a7ad",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/policy/dependency-policy.json",
+        "sha256": "ebde30ed1fd96baa1aaa2063ac03dad3336504e64508381008f191f79a380c55",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "tests/ArcForges.ArcNotes.Tests/DependencyPolicyTests.cs",
+        "sha256": "459274fcc0cd43412c3cd3a5fdca35d7bec5532819860c80356548abb21d1c4f",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      },
+      {
+        "path": "eng/policy/dependency-review.json",
+        "sha256": "34f1b711815d9fbf5cc5ab11aa5c61264a0d312f603ee6566e5fdeefb6a9c1c1",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      }
+    ],
+    "scope": "Extend the retained ArcNotes adaptation with offline dependency admission, exact package metadata, immutable coordinate history and upgrade review. Product owner literals and input hashes are adapted to ArcScope. No source checkout dependency or runtime behavior change.",
+    "copyingPermission": null
+  },
+  "attribution": [
+    "Copyright ArcForges contributors. ArcNotes support identity and tooling: AGPL-3.0-only.",
+    "Original provenance checker from Contracts: Apache-2.0; complete source terms and attribution retained.",
+    "ArcScope adapts product identity and future format/storage owner declarations.",
+    "ArcScope owner modifications: reduce hosted CI to Windows/Linux compilation and offline checks; remove mandatory runtime evidence and redundant validation.",
+    "ArcScope owner modifications: add reviewed dependency policy, upgrade records and offline negative fixtures adapted from ArcNotes b7358bd7b1dca0671cd51cf6d798d5c09911b198."
+  ],
+  "targets": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "e09784399a68bfbe136297ca55a72558ccdd62b0b81dd21ce3bfaf41fdf8b85f",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "9d567c843c8af63df502a0a1752767d183a1db2a7e52ebd2690c7edbbae008eb",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.targets",
+      "sha256": "ff01198f816a04667ade99836d5b57e0fb78067972d2c852f2e8c1e8eea3f138",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "ef826d5a6865882ae44e02c03a21e2d94e3146a2027a22bdbc6a558aac260321",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+      "sha256": "b8b811d878528c9fcff4e37fa4acd46ea5ce08221ff782183d201daffd010e33",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/IdentityEvidence.cs",
+      "sha256": "4a84f23b6b4bbce4f553994a04fd50ca806ffef497297fd6f890b563fc676b39",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/Program.cs",
+      "sha256": "1b89ecb457afbd25e82e43483c8d7cbc25d32d5851a9945f4ff2cd4c484baff4",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+      "sha256": "cb53d777f75ab803d3681f1b102cd0d9ae1a558202900f28ee79101eb34e5aea",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/version-sources.json",
+      "sha256": "dc07597ceb6f91db5ad5a84e9958740352a67a6a14dd095c8f3327f42922b3ea",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope.Core/BuildIdentity.cs",
+      "sha256": "1d401bde513f7c767494ab4f87aeadb76bb2135e6362c811a5aeaaa726cdcc78",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj",
+      "sha256": "5969080e16a982fbdf6d8eb887ec5fd8fc378824c0e9bf10e55503e851a5f188",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/LiveSmoke.cs",
+      "sha256": "f3a5f1ff85b6d35bd65a173b0c0c55df425f9117a7a4deb7a6510731b7b9b35d",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/Program.cs",
+      "sha256": "f6ee48c55fd9c5010d87e4aaba5ebfa786f527207f74134269a25b1508d7ad4a",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/BuildIdentityTests.cs",
+      "sha256": "20d05eb1ace061352d7e25d6dbd9dfcf34901f65641613c31f461927f8c193b5",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/CandidateTests.cs",
+      "sha256": "0ce2de28dcde626413e414365ee8d5df52332016b228f4a94c865b3a235a4258",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/ProvenancePolicyTests.cs",
+      "sha256": "1772f9bcb9d0e681a979ae29437701478cdf706adaed66a2508bde5ac626f74a",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/DependencyPolicy.cs",
+      "sha256": "abedd3d9e40f71dd324c671d133b73c2f0ae1075a2c670340a3ed36106360964",
+      "normalization": "lf"
+    },
+    {
+      "path": "docs/dependency-policy.md",
+      "sha256": "c2c87a4a8b6402abb1aa82060431b33efc66bbfba09635b58c03fbb6e120a7ad",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-policy.json",
+      "sha256": "f35ff83423ddc7be767ef5ada65295e065c2b8c2b80665bdb029087c3615194f",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/DependencyPolicyTests.cs",
+      "sha256": "1337e6a3fed468cd1cc197e1a05243dc63e8c47211af37b5756b87273d0946c7",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-review.json",
+      "sha256": "a166a9c7c49ff734a1787e68d6a0703545964971bf0a04372cfea04a4df3cea5",
+      "normalization": "lf"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Rewrite",
+  "verification": {
+    "kind": "transformation",
+    "command": "dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check; run targeted offline DependencyPolicyTests using existing tools and caches.",
+    "expected": "Complete unchanged locked closure, forbidden/floating/mutable/wrong-publisher negatives, immutable source provenance and matching owner policy input hashes. No runtime/public-download claim.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright ArcForges contributors. ArcScope adapts ArcNotes dependency admission and retained support tooling under AGPL-3.0-only; original Apache checker attribution remains retained.",
+    "files": [
+      "LICENSE",
+      "README.md",
+      "eng/third-party/LICENSE.Contracts.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "source",
+    "reason": "The full corresponding source retains these origin records and original terms. Compiled support code remains AGPL; portable packages already include the complete root licence and README origin/source pointer. Checker/tool-only Apache code is not linked into the application."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex, acting under the repository maintainer's implementation and review authorization",
+    "reviewedOn": "2026-09-21",
+    "decision": "approved",
+    "rationale": "Reviewed immutable ArcNotes origin b7358bd7b1dca0671cd51cf6d798d5c09911b198 and the owner-specific substitutions/input hashes under WP02.05. Retain every r1/r2/r3 record, licences and package identities.",
+    "baselineCommit": "8316d0bded118b0a76223c35cd42d7b1096b6104",
+    "reconciliation": false
+  },
+  "supersedes": "arcnotes-provenance-tools-r3"
+}

@@ -43,3 +43,5 @@ release verification also checks the actual archived notices and source receipt.
 Read [CONTRIBUTING](CONTRIBUTING.md), [security reporting](SECURITY.md) and the [code of conduct](CODE_OF_CONDUCT.md). ArcScope remains **AGPL-3.0-only**; see [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 Offline support metadata is available through `--build-info --evidence <path.json>`. See [build identity](docs/build-identity.md). Its implementation adapts [ArcNotes 0c797e3](https://github.com/ArcForges/ArcNotes/tree/0c797e30690a10d8798ddca19ca7f37b16cecf01) under AGPL-3.0-only; the full corresponding source and reviewed origin records are retained at this release’s Git commit.
+
+The [dependency admission gate](docs/dependency-policy.md) checks the complete locked closure and upgrade evidence. It adapts [ArcNotes source](https://github.com/ArcForges/ArcNotes/tree/b7358bd7b1dca0671cd51cf6d798d5c09911b198) under AGPL-3.0-only; full source and attribution remain in the immutable provenance records.
