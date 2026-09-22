@@ -313,6 +313,33 @@ public static partial class Program
             }
         }
         Console.WriteLine("Repository text, structured inputs and whitespace checks passed.");
+        DependencyPolicy.Validate(Directory.GetCurrentDirectory(), files);
+        using var dependencyReview = JsonDocument.Parse(File.ReadAllText("eng/policy/dependency-review.json"));
+        var dependencyBaseline = dependencyReview.RootElement.GetProperty("baselineCommit").GetString()!;
+        await Run("git", ["merge-base", "--is-ancestor", dependencyBaseline, "origin/main"]);
+        DependencyPolicy.ValidateBaseline(File.ReadAllText("eng/policy/dependency-review.json"),
+            await Capture("git", ["show", dependencyBaseline + ":global.json"]),
+            await Capture("git", ["show", dependencyBaseline + ":Directory.Packages.props"]));
+        if ((await Capture("git", ["rev-parse", "--is-shallow-repository"])).Trim() != "false")
+            throw new InvalidOperationException("Full Git admission history is required.");
+        var dependencyHistory = new List<string>();
+        foreach (var revision in (await Capture("git", ["log", "--format=%H", "--", "eng/policy/dependency-policy.json"])).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if ((await Capture("git", ["ls-tree", "--name-only", revision, "--", "eng/policy/dependency-policy.json"])).Length > 0)
+                dependencyHistory.Add(await Capture("git", ["show", revision + ":eng/policy/dependency-policy.json"]));
+        }
+        DependencyPolicy.ValidateHistory(File.ReadAllText("eng/policy/dependency-policy.json"), dependencyHistory);
+        Directory.CreateDirectory("artifacts/evidence");
+        await File.WriteAllTextAsync("artifacts/evidence/dependency-policy.json", JsonSerializer.Serialize(new
+        {
+            repository = "ArcScope",
+            result = "passed",
+            sourceCommit = (await Capture("git", ["rev-parse", "HEAD"])).Trim(),
+            policySha256 = DependencyPolicy.HashText(File.ReadAllText("eng/policy/dependency-policy.json")),
+            reviewSha256 = DependencyPolicy.HashText(File.ReadAllText("eng/policy/dependency-review.json")),
+            scope = "offline dependency admission; no new runtime or public-artifact validation"
+        }, Json) + "\n");
+        Console.WriteLine("Dependency admission, immutable inputs and upgrade review passed.");
         var projects = LicencePolicy.Validate(Directory.GetCurrentDirectory(), files);
         var evaluated = new List<object>();
         foreach (var project in projects)
