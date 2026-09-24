@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="ArcForges.Build.Policy" Version="1.0.0-ci.20.1" />
-    <PackageVersion Include="ArcForges.Contracts.PublicApi" Version="1.0.0-ci.36.1" />
+    <PackageVersion Include="ArcForges.Contracts.PublicApi" Version="1.0.0-ci.94.1" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.2" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.2" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.83.0" />
