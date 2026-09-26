@@ -21,9 +21,9 @@
       },
       "Grpc.AspNetCore.Web": {
         "type": "Direct",
-        "requested": "[2.83.0, )",
-        "resolved": "2.83.0",
-        "contentHash": "0fQlnmUorVo7SCghly5MQ5IhOn+w+Z9PYQOibdnYVUPJOhzW3iVwr5HYMVC5PnsTUfwpyZWIOfrAnwPa51k5Qw=="
+        "requested": "[2.84.0, )",
+        "resolved": "2.84.0",
+        "contentHash": "xhpKA/nWQbgFLT0Z9sANWU2n9qMcb7l5Sfo7Z7f+7JZxGxGMEKe9kbGn9K8TxJmsDJ9wlxJKp+b40HsQfuMFEQ=="
       },
       "xunit.v3.mtp-v2": {
         "type": "Direct",
@@ -60,8 +60,8 @@
       },
       "Grpc.Core.Api": {
         "type": "Transitive",
-        "resolved": "2.83.0",
-        "contentHash": "xU8BT2bCw4Ct+/qIFJhhjkDEilKUbBOfp4US7l3Xa3hnlkN9l2LgISCbOw4PFYpW5jJFcK7FUAyWOFIQ94Hiqg=="
+        "resolved": "2.84.0",
+        "contentHash": "p2SOMl6q/GZ4/5MLkgboC/z55g4zKUEruRn/g46QgppjQBVnsLZVBU/9VO7n60ll38G3Eo8Zu9b7x+W01GKFVg=="
       },
       "Grpc.Net.ClientFactory": {
         "type": "Transitive",
@@ -73,10 +73,10 @@
       },
       "Grpc.Net.Common": {
         "type": "Transitive",
-        "resolved": "2.83.0",
-        "contentHash": "9w52xxORdIGu4Mm8lff3psMIlarenu+7TC4uIfiiW9AyaHZ6iPE/18gIkG1DD9byGDuhjuhnN9hiviBUAmCuZw==",
+        "resolved": "2.84.0",
+        "contentHash": "DPxm/H8G/lDRrz997wM0M2zN/PGqVeZKDakhBbtABEbv6WIW4HI9g3BvntBQT6ZUROuGacMzfyyF9e5kiTVFfQ==",
         "dependencies": {
-          "Grpc.Core.Api": "2.83.0"
+          "Grpc.Core.Api": "2.84.0"
         }
       },
       "Grpc.Tools": {
@@ -196,8 +196,8 @@
         "type": "Project",
         "dependencies": {
           "ArcForges.Contracts.PublicApi": "[1.0.0-ci.36.1, )",
-          "Grpc.Net.Client": "[2.83.0, )",
-          "Grpc.Net.Client.Web": "[2.83.0, )"
+          "Grpc.Net.Client": "[2.84.0, )",
+          "Grpc.Net.Client.Web": "[2.84.0, )"
         }
       },
       "arcforges.repository": {
@@ -218,18 +218,18 @@
       },
       "Grpc.Net.Client": {
         "type": "CentralTransitive",
-        "requested": "[2.83.0, )",
-        "resolved": "2.83.0",
-        "contentHash": "dHYtx7hW4muttsCrWNG4/Ysb1iAIhNPEq28eo7vF166CdXn/RXOr3SGvSreIGIjvmdrADrBNJ2cUeJBto/T0XA==",
+        "requested": "[2.84.0, )",
+        "resolved": "2.84.0",
+        "contentHash": "My6Fms2YCyAbihTBZZ3kLS39iTY2pkMAzGDBTC6XhPOujg70eB07AEJ7tPiW3tZ70bhFzHcc3+d4j3DaIPF3aA==",
         "dependencies": {
-          "Grpc.Net.Common": "2.83.0"
+          "Grpc.Net.Common": "2.84.0"
         }
       },
       "Grpc.Net.Client.Web": {
         "type": "CentralTransitive",
-        "requested": "[2.83.0, )",
-        "resolved": "2.83.0",
-        "contentHash": "+VsLfmWH7Lv/8sH5k9QjrccR+FQapMvFkBkoTHLdk6EFqBMmBFsddy6A9vvilHZf1AL1GVPaSMBJyGiPcxp7+w=="
+        "requested": "[2.84.0, )",
+        "resolved": "2.84.0",
+        "contentHash": "6KB6IFGx+KfGMaN06nATBVgvgsOEVf12/nJHvdAPsY2mULmWCSn4moFUT8UnCnQ19C3tpGbc2CnB1/e0hVUmaA=="
       }
     }
   }

@@ -2,7 +2,7 @@ ArcForges source provenance notices
 
 Generated from reviewed active records. Original licence files and dependency notices remain authoritative.
 
-arcnotes-provenance-tools-r6
+arcnotes-provenance-tools-r7
 Source: https://github.com/ArcForges/ArcNotes @ b7358bd7b1dca0671cd51cf6d798d5c09911b198
 Material licence: AGPL-3.0-only
 Notice scope: source
