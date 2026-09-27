@@ -11,6 +11,8 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args is ["--smoke-native", "--evidence", var nativeEvidence])
+            return NativePackageProof.Run(nativeEvidence);
         if (args is ["--build-info", "--evidence", var output])
         {
             var path = Path.GetFullPath(output);

@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ArcForges.ArcScope;
 
-internal sealed class ArcScopeApp(IServiceProvider services, string? evidence) : Application
+internal sealed class ArcScopeApp(IServiceProvider services, string? evidence) : Avalonia.Application
 {
     public override void Initialize()
     {
