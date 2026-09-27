@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <AssemblyName>ArcScope</AssemblyName>
     <PublishAot>true</PublishAot>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
     <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
     <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
@@ -11,6 +12,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ArcForges.Foundation" />
+    <PackageReference Include="ArcForges.Application.Abstractions" />
+    <PackageReference Include="ArcForges.Native.Image" />
+    <!-- This staged producer has one RID. Retain its guard only when that runtime is selected. -->
+    <PackageReference Include="ArcForges.Native.Image.Runtime.win-x64" GeneratePathProperty="true" ExcludeAssets="build;buildTransitive" />
+    <PackageReference Include="ArcForges.Contracts.LocalRpc.Scope" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -24,4 +31,11 @@
     <LicenceBoundary>AGPL</LicenceBoundary>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <Content Include="$(PkgArcForges_Native_Image_Runtime_win-x64)/licenses/**/*" Link="third-party/native-image/licenses/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(PkgArcForges_Native_Image_Runtime_win-x64)/provenance/**/*" Link="third-party/native-image/provenance/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(PkgArcForges_Native_Image_Runtime_win-x64)/recipes/**/*" Link="third-party/native-image/recipes/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(PkgArcForges_Native_Image_Runtime_win-x64)/NOTICE.md;$(PkgArcForges_Native_Image_Runtime_win-x64)/sbom.json;$(PkgArcForges_Native_Image_Runtime_win-x64)/native-manifest.json;$(PkgArcForges_Native_Image_Runtime_win-x64)/build-identity.json" Link="third-party/native-image/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="$(PkgArcForges_Native_Image_Runtime_win-x64)/buildTransitive/ArcForges.Native.Image.Runtime.win-x64.targets" Condition="'$(RuntimeIdentifier)' == 'win-x64'" />
 </Project>

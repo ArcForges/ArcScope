@@ -29,6 +29,17 @@ public sealed class DependencyPolicyTests
     }
 
     [Fact]
+    public void NativeAdmissionDoesNotAdmitOtherPackageLicencesOrPublishers()
+    {
+        using var publicContract = new Fixture();
+        publicContract.Edit("eng/policy/dependency-policy.json", data => data["packages"]![1]!["licence"] = "AGPL-3.0-only");
+        Assert.Contains("Forbidden dependency licence", Assert.Throws<InvalidOperationException>(publicContract.Check).Message, StringComparison.Ordinal);
+        using var unknownNative = new Fixture();
+        unknownNative.Edit("eng/policy/dependency-policy.json", data => data["packages"]![0]!["id"] = "ArcForges.Native.Unreviewed");
+        Assert.Contains("Forbidden dependency licence", Assert.Throws<InvalidOperationException>(unknownNative.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RejectsSameVersionWithChangedBytes()
     {
         using var fixture = new Fixture();

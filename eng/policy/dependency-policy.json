@@ -5,7 +5,7 @@
   "channel": "foundation-candidate",
   "feed": "https://api.nuget.org/v3/index.json",
   "reviewRecord": "eng/policy/dependency-review.json",
-  "nativeAdmission": "existing-framework-closure-only; new native slots require DesktopPlatform admission",
+  "nativeAdmission": "existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate",
   "packages": [
     {
       "id": "ArcForges.Build.Policy",
@@ -1189,6 +1189,97 @@
       "dependencyClass": "tooling",
       "maintenanceAssessment": "Retain the already admitted pinned release and upstream source identity; no new dependency or current upstream support/freshness claim. Existing dependency-review/security gates review changes; the product owner must assess replacement or vulnerabilities before an upgrade.",
       "previewAdmission": "none"
+    },
+    {
+      "id": "ArcForges.Application.Abstractions",
+      "version": "1.0.0-ci.29.1",
+      "contentHash": "8ICXm8LvJsaXgNz6RfiHSoxxqxE3jLJMz8IWCcweW0FIzv6isEl3SMH+pbBATNKIqApDmCN78FT/csCAqMBMRA==",
+      "licence": "AGPL-3.0-only",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
+      "sourceCommit": "ace60538849047184954baed09fb05ec7676d367",
+      "nuspecSha256": "ee357e2c21126b5278bba1b94212302e1dd30e25af1adbd45d185f0863ec634a",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Contracts.LocalRpc.Scope",
+      "version": "1.0.0-ci.113.1",
+      "contentHash": "exus49NHRthkxzmKbfsffjov/aqVBhzRUHXqa/UnkM0DZ2vRn+FFPQrMp0lN2sRcZH8ODszh7jfUDuxiXMxjvQ==",
+      "licence": "Apache-2.0",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/Contracts",
+      "sourceCommit": "b10b2f6f316bf0c007e00632c5442fc102ebbe6e",
+      "nuspecSha256": "08febf48ac7e1ea89ea69d74435a9ccecd4042d4e416cc8411289151940f2e7e",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Foundation",
+      "version": "1.0.0-ci.29.1",
+      "contentHash": "P5FRjzq8/DOhNS4bI4PAtjjnkIN2XPufXV0vnfyRFyDN12A/QcV1nteBCu4q/Kxg9R0Enlftut9QxYNtMPzDTg==",
+      "licence": "AGPL-3.0-only",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
+      "sourceCommit": "ace60538849047184954baed09fb05ec7676d367",
+      "nuspecSha256": "e935bdbe249491c131cdc2c9a07dc55a1b9724c664acd3064bd8393a646bdc59",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Native.Image",
+      "version": "1.0.0-ci.29.1",
+      "contentHash": "DhVkkS7x1dN/JksFU6UyW4lp5WXorEGAr95ooW7CJsNyOiwIZzeGEov32hNArwkubg3d1ccwYMfEX+q725gXBw==",
+      "licence": "AGPL-3.0-only",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
+      "sourceCommit": "ace60538849047184954baed09fb05ec7676d367",
+      "nuspecSha256": "d14e856f6539cfc357c63b7ecfa3da838055bfd6714b69133d9247987effce46",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Native.Image.Runtime.win-x64",
+      "version": "1.0.0-ci.29.1",
+      "contentHash": "fogI/jD3aNXgD5HW3M57Pyu6SMJJE64Yx6nXuuRSiSxO9KOfJloU3Xuvf7xY2Kv7Jg7NmsnuFROmsEto94+fXA==",
+      "licence": "AGPL-3.0-only",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
+      "sourceCommit": "ace60538849047184954baed09fb05ec7676d367",
+      "nuspecSha256": "96db41acb8b741e209fc11158b442da22ead388b20bf34629568bcf7dd950ae8",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Contracts.Foundation",
+      "version": "1.0.0-ci.113.1",
+      "contentHash": "k51yFjKnec92FJEfOM3/6YEhnbi1wfO4gztqjlhLumg7USTjVnA7ab7rE4X/H1cDb62Ny4c2ufn8Xi/CtBaZnA==",
+      "licence": "Apache-2.0",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/Contracts",
+      "sourceCommit": "b10b2f6f316bf0c007e00632c5442fc102ebbe6e",
+      "nuspecSha256": "7726a233f9ce81c4373a2ab9423c33d566b919bb2cb90d2b5577cf844bbbbfc4",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
+    },
+    {
+      "id": "ArcForges.Native.Abstractions",
+      "version": "1.0.0-ci.29.1",
+      "contentHash": "Wlwvv/ItQ7UweSanektcIG5RJgPsKDb7KcUdl8froaI5JnAnrkvf0FqbwLizPoWjZsvqefVZPf9epX5E6f7drQ==",
+      "licence": "AGPL-3.0-only",
+      "licenceEvidence": "Published exact package nuspec declares this SPDX expression; packaged notices and source receipts retain bundled native dependency terms.",
+      "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
+      "sourceCommit": "ace60538849047184954baed09fb05ec7676d367",
+      "nuspecSha256": "5b110655ac18eb3d7abb732313e9ed8579461f879317518f084069cecbd2989c",
+      "dependencyClass": "library",
+      "maintenanceAssessment": "Consume the reviewed immutable producer candidate for PRF.02 primitive/native ABI proof. No new upstream freshness or vulnerability absence claim; preserved dependency/security gates apply.",
+      "previewAdmission": "exact-foundation-candidate"
     }
   ]
 }

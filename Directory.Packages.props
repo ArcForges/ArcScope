@@ -7,6 +7,13 @@
   <ItemGroup>
     <PackageVersion Include="ArcForges.Build.Policy" Version="1.0.0-ci.20.1" />
     <PackageVersion Include="ArcForges.Contracts.PublicApi" Version="1.0.0-ci.36.1" />
+    <PackageVersion Include="ArcForges.Foundation" Version="1.0.0-ci.29.1" />
+    <PackageVersion Include="ArcForges.Application.Abstractions" Version="1.0.0-ci.29.1" />
+    <PackageVersion Include="ArcForges.Native.Image" Version="1.0.0-ci.29.1" />
+    <PackageVersion Include="ArcForges.Native.Abstractions" Version="1.0.0-ci.29.1" />
+    <PackageVersion Include="ArcForges.Native.Image.Runtime.win-x64" Version="1.0.0-ci.29.1" />
+    <PackageVersion Include="ArcForges.Contracts.Foundation" Version="1.0.0-ci.113.1" />
+    <PackageVersion Include="ArcForges.Contracts.LocalRpc.Scope" Version="1.0.0-ci.113.1" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.3" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.3" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.84.0" />
