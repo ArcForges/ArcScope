@@ -11,7 +11,7 @@
   "frameworkMajorUpgrade": false,
   "runtimePostureAssessment": "No framework version changes: existing desktop Native AOT and trim posture retained.",
   "checks": {
-    "compilation": "Exact Foundation/Application.Abstractions and native Image candidate29.1 plus Contracts.Foundation/LocalRpc.Scope113.1; three existing Windows/Linux AOT compile/package jobs remain required.",
+    "compilation": "Exact Foundation/Application.Abstractions and native Image candidate29.1 plus Contracts.Foundation/LocalRpc.Scope113.1; SCOPE.02 adds a Domain project using only the already-admitted shared Build.Policy package, with no dependency-coordinate or closure change; three existing Windows/Linux AOT compile/package jobs remain required.",
     "aot": "Native AOT host consumes published packages only; zero diagnostic policy retained. Local win-x64 affected-scope publish uses existing SDK and Visual Studio tools.",
     "compatibility": "Available Image ABI1.0 win-x64 consumer proof only. Other runtime RIDs and functional ABI1.1 remain unproven; APP01 and PLT11 real composition acceptance remains pending.",
     "licence": "Exact producer nuspec SPDX, source repository/commit and hashes recorded; only exact DesktopPlatform package IDs admit AGPL3-only. Native notices/license texts and SBOM are copied from that package into win-x64 publish.",
@@ -30,15 +30,17 @@
     "eng/ArcForges.Repository/ArcForges.Repository.csproj": "b8b811d878528c9fcff4e37fa4acd46ea5ce08221ff782183d201daffd010e33",
     "eng/ArcForges.Repository/packages.lock.json": "4965f635e4893c4eadf41e762cc50cf3ea24853a4b2ea609f27a8b2d4699b6e1",
     "eng/policy/dependency-policy.json": "36fc24d700fa37b142d340ce35c3d28e93144a36abef2558fedc4f6375d2fb5f",
-    "eng/policy/licence-boundary.json": "a742df60c4dfcad5f72da6b8312795d69b8d42894b0ef871eafb58732c4629be",
+    "eng/policy/licence-boundary.json": "6f289e9bf277d2e5ec061fc7121c70f52166877e910c4a9fcfb49d0cf9464a34",
     "eng/policy/reuse-policy.json": "efd435e1a5b41a6b1ff29e5b6472553616eb5bf88f710616e83549c86d24a788",
     "global.json": "d533441ee720f55065ffdda4273cd815f53f534612cd5899bd4b9b41d0e3a630",
     "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj": "2338d20f00790d79a717e3ed74cfd79de26204d428eda618247558d84f776f3d",
     "src/ArcForges.ArcScope.Core/packages.lock.json": "78bb25ce23a0713df94863fbddb1bd6373f5d9b85cb543d007d25408ad6fc0fe",
+    "src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj": "62cc53a6092b232caae8fba18710a63f9b77e40a9d4484bd41f70620feaf8fb5",
+    "src/ArcForges.ArcScope.Domain/packages.lock.json": "b0dd5f300b74a932380fad6e40a7ca7bcf6246c07ef2b07c6685823a01a5239a",
     "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj": "1518fa692a1a4d59ca79a6d67f9d46b219ad6a642133f1643728886cc47c4147",
     "src/ArcForges.ArcScope/packages.lock.json": "f159daf547d7f2c64a3b450dde381873bda660702f43db9d10a07fc9884ce8e7",
-    "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj": "9d411d5f46d36903fa34592abe0d5977b81b10b215519cc5c5cecc53320fea48",
-    "tests/ArcForges.ArcScope.Tests/packages.lock.json": "01ea4cee4c7780bf8db8ed89196c6f460e69f11d3540bd3a4447e04c1c5db3f0",
+    "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj": "827e563c36614d8b3e52413c98fdc2ffdf5f90a3a49d5147257b1e5c566cb86d",
+    "tests/ArcForges.ArcScope.Tests/packages.lock.json": "2b8e7ee673c8c08f8ae5c0f5894d3cfa599551a1f4e52f34121b95a8ec0607ca",
     "third-party/sources.json": "106696f712f9574d0e5521337c954bdb936ee3e30901a7aab1f2d569bed548f6"
   }
 }

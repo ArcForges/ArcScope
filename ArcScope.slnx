@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj" />
     <Project Path="src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <Project Path="src/ArcForges.ArcScope/ArcForges.ArcScope.csproj" />
   </Folder>

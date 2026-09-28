@@ -8,6 +8,7 @@
     <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Web" />
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <ProjectReference Include="../../eng/ArcForges.Repository/ArcForges.Repository.csproj" />
   </ItemGroup>
