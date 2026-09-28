@@ -200,6 +200,9 @@
           "Grpc.Net.Client.Web": "[2.84.0, )"
         }
       },
+      "arcforges.arcscope.domain": {
+        "type": "Project"
+      },
       "arcforges.repository": {
         "type": "Project",
         "dependencies": {

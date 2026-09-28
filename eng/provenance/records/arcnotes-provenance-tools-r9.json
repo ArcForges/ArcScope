@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "arcnotes-provenance-tools-r9",
+  "kind": "source",
+  "sourceRepository": "https://github.com/ArcForges/ArcNotes",
+  "sourceCommit": "b7358bd7b1dca0671cd51cf6d798d5c09911b198",
+  "sourcePaths": [
+    "eng/ArcForges.Repository/ProvenancePolicy.cs",
+    "eng/ArcForges.Repository/Program.cs",
+    "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+    "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs",
+    "eng/ArcForges.Repository/DependencyPolicy.cs",
+    "eng/ArcForges.Repository/IdentityEvidence.cs",
+    "src/ArcForges.ArcNotes.Core/BuildIdentity.cs",
+    "tests/ArcForges.ArcNotes.Tests/BuildIdentityTests.cs",
+    "Directory.Build.targets",
+    "Directory.Build.props",
+    "Directory.Packages.props",
+    "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+    "src/ArcForges.ArcNotes/ArcForges.ArcNotes.csproj",
+    "src/ArcForges.ArcNotes/Program.cs",
+    "src/ArcForges.ArcNotes/LiveSmoke.cs",
+    ".github/workflows/ci.yml",
+    "eng/version-sources.json",
+    "docs/dependency-policy.md",
+    "eng/policy/dependency-policy.json",
+    "tests/ArcForges.ArcNotes.Tests/DependencyPolicyTests.cs",
+    "eng/policy/dependency-review.json"
+  ],
+  "licence": {
+    "spdx": "AGPL-3.0-only",
+    "category": "agpl-compatible",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      }
+    ],
+    "scope": "Retain the ArcNotes dependency-review format while binding ArcScope's current exact project, lock and licence inputs. SCOPE.02 adds only a package-free domain model beyond the already-admitted shared Build.Policy dependency; package coordinates, versions and closure remain unchanged.",
+    "copyingPermission": null
+  },
+  "attribution": [
+    "Copyright ArcForges contributors. ArcNotes support identity and tooling: AGPL-3.0-only.",
+    "Original provenance checker from Contracts: Apache-2.0; complete source terms and attribution retained.",
+    "ArcScope adapts product identity and future format/storage owner declarations.",
+    "ArcScope owner modifications: reduce hosted CI to Windows/Linux compilation and offline checks; remove mandatory runtime evidence and redundant validation.",
+    "ArcScope owner modifications: add reviewed dependency policy, upgrade records and offline negative fixtures adapted from ArcNotes b7358bd7b1dca0671cd51cf6d798d5c09911b198.",
+    "ArcScope owner modifications: reviewed dependency updates are recorded in the owner dependency admission and review inputs.",
+    "ArcScope owner modifications: SCOPE.02 adds exact Domain project and test-reference input hashes; no package coordinate, version, dependency closure or CI workflow change."
+  ],
+  "targets": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "48e4cb95953bd927f80522c61885b8d3f890eded4d33b0b08da3b0cc121c5b6f",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "9d567c843c8af63df502a0a1752767d183a1db2a7e52ebd2690c7edbbae008eb",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.targets",
+      "sha256": "ff01198f816a04667ade99836d5b57e0fb78067972d2c852f2e8c1e8eea3f138",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "95223d066442a92183d72e573e6b6e505af44522fe69cf76da77e0c2a8cf83a3",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+      "sha256": "b8b811d878528c9fcff4e37fa4acd46ea5ce08221ff782183d201daffd010e33",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/IdentityEvidence.cs",
+      "sha256": "4a84f23b6b4bbce4f553994a04fd50ca806ffef497297fd6f890b563fc676b39",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/Program.cs",
+      "sha256": "1b89ecb457afbd25e82e43483c8d7cbc25d32d5851a9945f4ff2cd4c484baff4",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+      "sha256": "cb53d777f75ab803d3681f1b102cd0d9ae1a558202900f28ee79101eb34e5aea",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/version-sources.json",
+      "sha256": "dc07597ceb6f91db5ad5a84e9958740352a67a6a14dd095c8f3327f42922b3ea",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope.Core/BuildIdentity.cs",
+      "sha256": "1d401bde513f7c767494ab4f87aeadb76bb2135e6362c811a5aeaaa726cdcc78",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj",
+      "sha256": "1518fa692a1a4d59ca79a6d67f9d46b219ad6a642133f1643728886cc47c4147",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/LiveSmoke.cs",
+      "sha256": "f3a5f1ff85b6d35bd65a173b0c0c55df425f9117a7a4deb7a6510731b7b9b35d",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/Program.cs",
+      "sha256": "f4c974d1dc3024a5859605c9ae040b3f37167c0c480895ae5c0404626fa07ff8",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/BuildIdentityTests.cs",
+      "sha256": "20d05eb1ace061352d7e25d6dbd9dfcf34901f65641613c31f461927f8c193b5",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/CandidateTests.cs",
+      "sha256": "0ce2de28dcde626413e414365ee8d5df52332016b228f4a94c865b3a235a4258",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/ProvenancePolicyTests.cs",
+      "sha256": "1772f9bcb9d0e681a979ae29437701478cdf706adaed66a2508bde5ac626f74a",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/DependencyPolicy.cs",
+      "sha256": "708e48ea968891d88dd55d3148c3138426805d7a3cb04776147f5911e03445df",
+      "normalization": "lf"
+    },
+    {
+      "path": "docs/dependency-policy.md",
+      "sha256": "c2c87a4a8b6402abb1aa82060431b33efc66bbfba09635b58c03fbb6e120a7ad",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-policy.json",
+      "sha256": "36fc24d700fa37b142d340ce35c3d28e93144a36abef2558fedc4f6375d2fb5f",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/DependencyPolicyTests.cs",
+      "sha256": "b57c5766b1b3df411cbeb6f42d71744a83038c30939324257b04a12ee8bc1c39",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-review.json",
+      "sha256": "cad84b8672917e41c43a042bce4bf15e7e225f70608e84a2cac4eb0ae04bb89a",
+      "normalization": "lf"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Rewrite",
+  "verification": {
+    "kind": "transformation",
+    "command": "dotnet restore ArcScope.slnx --locked-mode; build the solution and execute the existing ArcForges.ArcScope.Tests suite; dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check",
+    "expected": "The canonical ArcScope.Domain model is enrolled in the existing solution and licence boundary; lock changes contain only the new Domain project and the test ProjectReference, with the admitted package closure unchanged.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright ArcForges contributors. ArcScope adapts ArcNotes dependency admission and retained support tooling under AGPL-3.0-only; original Apache checker attribution remains retained.",
+    "files": [
+      "LICENSE",
+      "README.md",
+      "eng/third-party/LICENSE.Contracts.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "source",
+    "reason": "The full corresponding source retains these origin records and original terms. Compiled support code remains AGPL; portable packages already include the complete root licence and README origin/source pointer. Checker/tool-only Apache code is not linked into the application."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex SCOPE.02 claimant; independent exact-head PR review required",
+    "reviewedOn": "2026-09-28",
+    "decision": "approved",
+    "rationale": "SCOPE.02 adds the canonical internal Domain model and existing project enrollment. The locked package closure remains unchanged; the record binds only the exact new project/reference and licence inputs.",
+    "baselineCommit": "a6899eddc4da7cf338d1a1404f1c0c1b8acc546d",
+    "reconciliation": false
+  },
+  "supersedes": "arcnotes-provenance-tools-r8"
+}

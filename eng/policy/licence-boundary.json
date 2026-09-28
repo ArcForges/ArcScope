@@ -9,6 +9,10 @@
       "kind": "msbuild"
     },
     {
+      "path": "src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj",
+      "kind": "msbuild"
+    },
+    {
       "path": "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj",
       "kind": "msbuild"
     },
