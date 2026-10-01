@@ -4,9 +4,9 @@
     "net10.0": {
       "ArcForges.Build.Policy": {
         "type": "Direct",
-        "requested": "[1.0.0-ci.20.1, )",
-        "resolved": "1.0.0-ci.20.1",
-        "contentHash": "rGn/WwyV9sq38y9rlQGX9gLBqy93XOgHmUSKJ2AupR6DDfVHTHgZVwnhfGL1K9XJkRKV972GV/dFcLersJ5iVw=="
+        "requested": "[1.0.0-ci.68.1, )",
+        "resolved": "1.0.0-ci.68.1",
+        "contentHash": "tq86fQ2MBJT//zhs1AKGfyoGa+UQMfszE/c+Y51aWQ3BzMWcvRIo04Mwp+wBN7pcfb3p2xHmBygNp9sURCYL3A=="
       },
       "Grpc.AspNetCore": {
         "type": "Direct",
