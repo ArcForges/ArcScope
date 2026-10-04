@@ -102,10 +102,10 @@ internal static class ContractConsumptionChecks
     // ---- Compilation level: how contracts are used by production code -----------------------------------------
 
     /// <summary>A production type implementing a protobuf message or deriving a gRPC client is hand-written wire code.</summary>
-    public static IReadOnlyList<string> FindHandWrittenWireTypes(CSharpCompilation compilation)
+    public static IReadOnlyList<string> FindHandWrittenWireTypes(CSharpCompilation compilation, Func<SyntaxTree, bool>? only = null)
     {
         var findings = new List<string>();
-        foreach (var tree in compilation.SyntaxTrees)
+        foreach (var tree in compilation.SyntaxTrees.Where(tree => only?.Invoke(tree) ?? true))
         {
             var model = compilation.GetSemanticModel(tree);
             foreach (var declaration in tree.GetRoot().DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
@@ -127,10 +127,10 @@ internal static class ContractConsumptionChecks
     }
 
     /// <summary>Hand-built method descriptors or marshallers bypass the generated service identity.</summary>
-    public static IReadOnlyList<string> FindHandBuiltRpcDescriptors(CSharpCompilation compilation)
+    public static IReadOnlyList<string> FindHandBuiltRpcDescriptors(CSharpCompilation compilation, Func<SyntaxTree, bool>? only = null)
     {
         var findings = new List<string>();
-        foreach (var tree in compilation.SyntaxTrees)
+        foreach (var tree in compilation.SyntaxTrees.Where(tree => only?.Invoke(tree) ?? true))
         {
             var model = compilation.GetSemanticModel(tree);
             foreach (var creation in tree.GetRoot().DescendantNodes().OfType<BaseObjectCreationExpressionSyntax>())
@@ -156,10 +156,10 @@ internal static class ContractConsumptionChecks
     }
 
     /// <summary>Public business clients use binary gRPC-Web; the text-encoded mode is never selected.</summary>
-    public static IReadOnlyList<string> FindTextEncodedGrpcWeb(CSharpCompilation compilation)
+    public static IReadOnlyList<string> FindTextEncodedGrpcWeb(CSharpCompilation compilation, Func<SyntaxTree, bool>? only = null)
     {
         var findings = new List<string>();
-        foreach (var tree in compilation.SyntaxTrees)
+        foreach (var tree in compilation.SyntaxTrees.Where(tree => only?.Invoke(tree) ?? true))
         {
             var model = compilation.GetSemanticModel(tree);
             foreach (var access in tree.GetRoot().DescendantNodes().OfType<MemberAccessExpressionSyntax>())
@@ -176,10 +176,10 @@ internal static class ContractConsumptionChecks
     }
 
     /// <summary>Serializer calls must bind compile-time JsonTypeInfo metadata; reflection serializers are unreachable.</summary>
-    public static IReadOnlyList<string> FindUnregisteredJsonSerializer(Compilation compilation)
+    public static IReadOnlyList<string> FindUnregisteredJsonSerializer(Compilation compilation, Func<SyntaxTree, bool>? only = null)
     {
         var findings = new List<string>();
-        foreach (var tree in compilation.SyntaxTrees)
+        foreach (var tree in compilation.SyntaxTrees.Where(tree => only?.Invoke(tree) ?? true))
         {
             var model = compilation.GetSemanticModel(tree);
             foreach (var invocation in tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>())
@@ -221,28 +221,30 @@ internal static class ContractConsumptionChecks
 
     public static void Fixtures()
     {
+        // The stand-in contract types live in wire.cs and are the subject of no check; only fixture.cs is analysed.
         CSharpCompilation Compile(string name, string source) => FixtureCompiler.Compile(name,
             new Dictionary<string, string> { ["fixture.cs"] = source, ["wire.cs"] = FakeWireTypes });
+        static bool Subject(SyntaxTree tree) => tree.FilePath == "fixture.cs";
 
         var clean = Compile("Clean", "class Use { Grpc.Net.Client.Web.GrpcWebMode Mode => Grpc.Net.Client.Web.GrpcWebMode.GrpcWeb; }");
-        Checks.Empty(FindHandWrittenWireTypes(clean).Concat(FindHandBuiltRpcDescriptors(clean)).Concat(FindTextEncodedGrpcWeb(clean)),
+        Checks.Empty(FindHandWrittenWireTypes(clean, Subject).Concat(FindHandBuiltRpcDescriptors(clean, Subject)).Concat(FindTextEncodedGrpcWeb(clean, Subject)),
             "Generated-client consumption through binary gRPC-Web was rejected.");
 
-        Checks.True(FindHandWrittenWireTypes(Compile("Message", "public sealed class Hand : Google.Protobuf.IMessage<Hand> { }")).Count != 0,
+        Checks.True(FindHandWrittenWireTypes(Compile("Message", "public sealed class Hand : Google.Protobuf.IMessage<Hand> { }"), Subject).Count != 0,
             "A hand-written protobuf message was accepted.");
-        Checks.True(FindHandWrittenWireTypes(Compile("Client", "public sealed class Hand : Grpc.Core.ClientBase<Hand> { }")).Count != 0,
+        Checks.True(FindHandWrittenWireTypes(Compile("Client", "public sealed class Hand : Grpc.Core.ClientBase<Hand> { }"), Subject).Count != 0,
             "A hand-written gRPC client was accepted.");
-        Checks.True(FindHandBuiltRpcDescriptors(Compile("Method", "class Use { object M() => new Grpc.Core.Method<int, int>(); }")).Count != 0,
+        Checks.True(FindHandBuiltRpcDescriptors(Compile("Method", "class Use { object M() => new Grpc.Core.Method<int, int>(); }"), Subject).Count != 0,
             "A hand-built gRPC method descriptor was accepted.");
-        Checks.True(FindHandBuiltRpcDescriptors(Compile("Marshaller", "class Use { object M() => Grpc.Core.Marshallers.Create<int>(); }")).Count != 0,
+        Checks.True(FindHandBuiltRpcDescriptors(Compile("Marshaller", "class Use { object M() => Grpc.Core.Marshallers.Create<int>(); }"), Subject).Count != 0,
             "A hand-built gRPC marshaller was accepted.");
-        Checks.True(FindTextEncodedGrpcWeb(Compile("Text", "class Use { object M() => Grpc.Net.Client.Web.GrpcWebMode.GrpcWebText; }")).Count != 0,
+        Checks.True(FindTextEncodedGrpcWeb(Compile("Text", "class Use { object M() => Grpc.Net.Client.Web.GrpcWebMode.GrpcWebText; }"), Subject).Count != 0,
             "Text-encoded gRPC-Web was accepted.");
 
         const string registered = "using System.Text.Json; using System.Text.Json.Serialization.Metadata; record Wire { } class C { static JsonTypeInfo<Wire> Metadata => throw null!; static object? Read(string json) => JsonSerializer.Deserialize<Wire>(json, Metadata); }";
         const string reflective = "using System.Text.Json; record Wire { } class C { static object? Read(string json) => JsonSerializer.Deserialize<Wire>(json); }";
-        Checks.Empty(FindUnregisteredJsonSerializer(Compile("Registered", registered)), "Registered compile-time JSON metadata was rejected.");
-        Checks.True(FindUnregisteredJsonSerializer(Compile("Reflective", reflective)).Count != 0, "An unregistered reflection-serializer call was accepted.");
+        Checks.Empty(FindUnregisteredJsonSerializer(Compile("Registered", registered), Subject), "Registered compile-time JSON metadata was rejected.");
+        Checks.True(FindUnregisteredJsonSerializer(Compile("Reflective", reflective), Subject).Count != 0, "An unregistered reflection-serializer call was accepted.");
 
         Checks.True(DisablesReflectionJson(XDocument.Parse("<Project><PropertyGroup><JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault></PropertyGroup></Project>")),
             "A project that disables reflection JSON was rejected.");

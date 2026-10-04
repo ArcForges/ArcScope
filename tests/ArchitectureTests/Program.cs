@@ -57,6 +57,12 @@ internal static class Program
         {
             // Never echo environment variables or build-job secrets.
             WriteFailure(Console.Error, stage, exception);
+            if (args.Length == 0)
+            {
+                // The local run holds only offline fixtures and repository text, so its diagnosis is safe to show.
+                Console.Error.WriteLine(exception.Message);
+            }
+
             return 1;
         }
     }

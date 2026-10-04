@@ -51,8 +51,15 @@ internal static class ArchitectureFixtureTests
                 var allowed = FixtureCompiler.Compile("Allowed", new Dictionary<string, string> { ["allowed.cs"] = test.Allowed });
                 var banned = FixtureCompiler.Compile("Banned", new Dictionary<string, string> { ["banned.cs"] = test.Banned });
                 Checks.Empty(BannedSymbolScanner.Scan(allowed, classification), $"Allowed fixture triggered {test.Rule} in role {role}.");
-                Checks.True(BannedSymbolScanner.Scan(banned, classification).Any(finding => finding.Rule == test.Rule),
-                    $"Banned fixture did not trigger {test.Rule} in role {role}.");
+                bool triggered = BannedSymbolScanner.Scan(banned, classification).Any(finding => finding.Rule == test.Rule);
+                if (test.Rule == "BAN-PROVIDER" && role == ProjectRole.Infrastructure)
+                {
+                    // ArcScope's Infrastructure projects are its adapters, the only place a provider SDK call is permitted.
+                    Checks.True(!triggered, "A provider call inside an adapter project was rejected.");
+                    continue;
+                }
+
+                Checks.True(triggered, $"Banned fixture did not trigger {test.Rule} in role {role}.");
             }
         }
 
