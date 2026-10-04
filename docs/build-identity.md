@@ -10,7 +10,7 @@ separate sources. Unsupported future capability, format, storage, policy and
 extension implementations identify their responsible owners explicitly. Third-party
 native dependencies do not invent a first-party C ABI version.
 
-Published Build.Policy 1.0.0-ci.20.1 stamps every owned assembly; owner targets add
+Published Build.Policy 1.0.0-ci.94.1 stamps every owned assembly; owner targets add
 actual dirty state and reject source mismatches. The build identity contains the
 full commit, local/CI kind, run/attempt, pipeline URL and Git source timestamp.
 Contracts remains pinned to 1.0.0-ci.36.1, whose Hello contract major is 1.

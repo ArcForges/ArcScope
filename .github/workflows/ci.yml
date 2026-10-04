@@ -102,7 +102,7 @@ jobs:
   quality:
     name: Workflow and secret checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -116,6 +116,15 @@ jobs:
           "$RUNNER_TEMP/actionlint" -color
       - name: Scan Git history for secrets
         run: docker run --rm --network none -v "$PWD:/repo:ro" zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f git /repo --redact=100 --no-banner
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          global-json-file: global.json
+      - run: dotnet restore ArcScope.slnx --locked-mode
+      - run: dotnet build ArcScope.slnx -c Release --no-restore --verbosity minimal
+      - name: Scan forbidden terms with the canonical scanner (WP-05.02)
+        run: python3 tests/ArchitectureTests/naming_evidence.py --report artifacts/evidence/naming.json
+      - name: Run the ArcScope architecture policy over the real project graph
+        run: dotnet tests/ArchitectureTests/bin/Release/net10.0/ArcForges.ArcScope.ArchitectureTests.dll --hosted
 
   dependency-review:
     name: Dependency review

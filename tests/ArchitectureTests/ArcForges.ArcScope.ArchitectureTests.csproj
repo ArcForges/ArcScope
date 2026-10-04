@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SPDX-License-Identifier: AGPL-3.0-only -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The shared Build.Policy package is already referenced for every project by Directory.Build.props. -->
+    <PackageReference Update="ArcForges.Build.Policy" GeneratePathProperty="true" />
+  </ItemGroup>
+  <PropertyGroup>
+    <LicenceBoundary>AGPL</LicenceBoundary>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+  <Import Project="$(PkgArcForges_Build_Policy)/tools/architecture/ArchitecturePolicy.props" />
+</Project>

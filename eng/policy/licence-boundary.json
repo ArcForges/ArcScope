@@ -23,6 +23,10 @@
     {
       "path": "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj",
       "kind": "msbuild"
+    },
+    {
+      "path": "tests/ArchitectureTests/ArcForges.ArcScope.ArchitectureTests.csproj",
+      "kind": "msbuild"
     }
   ]
 }
