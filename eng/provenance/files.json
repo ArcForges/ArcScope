@@ -89,6 +89,7 @@
     "tests/ArchitectureTests/PolicyFixture.cs",
     "tests/ArchitectureTests/Program.cs",
     "tests/ArchitectureTests/README.md",
+    "tests/ArchitectureTests/XunitFact.cs",
     "tests/ArchitectureTests/naming-package.json",
     "tests/ArchitectureTests/naming_evidence.py",
     "tests/ArchitectureTests/packages.lock.json",
