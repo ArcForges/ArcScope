@@ -57,9 +57,9 @@ internal static class Program
         {
             // Never echo environment variables or build-job secrets.
             WriteFailure(Console.Error, stage, exception);
-            if (args.Length == 0)
+            if (args.Length == 0 || Environment.GetEnvironmentVariable("ARCSCOPE_POLICY_DIAGNOSE") == "1")
             {
-                // The local run holds only offline fixtures and repository text, so its diagnosis is safe to show.
+                // The local run (or an explicit local opt-in) shows the diagnosis; hosted runs print only the fixed stage code.
                 Console.Error.WriteLine(exception.Message);
             }
 
