@@ -26,3 +26,12 @@ Rule coverage
 
 Project roles are reviewed in `HostedPolicyGate.Classifications`; the set must equal the solution. ArcScope is AGPL-3.0-only, so
 no RP-03 exception exists or is permitted.
+
+Known deferral (honest limit)
+
+The shared engine fails closed ("Unresolved invocation cannot be audited") on the unmanaged function-pointer calls in
+`src/ArcForges.ArcScope/NativePackageProof.cs`, so the executable is classified `Production: false` and its production-only rules
+(banned-API scan, public-API test binding, layer rules that apply to production projects) are not enforced. Layering, licence, AOT
+fence and contract-consumption rules still cover it. The deferral is self-expiring: a fixture and a hosted check assert that the
+engine still cannot audit that file and fail once it can, which forces `Production: true` to be restored. Repairing the engine
+is a shared Build.Policy change, not part of this task.

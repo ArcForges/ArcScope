@@ -63,6 +63,24 @@ internal static class ArchitectureFixtureTests
             }
         }
 
+        // Known engine limit that justifies the executable's deferral: an unmanaged function-pointer call cannot be audited and the
+        // scan fails closed. If this stops throwing, the engine was repaired: restore Production: true for the executable.
+        var pointerCall = FixtureCompiler.Compile("PointerCall", new Dictionary<string, string>
+        {
+            ["pointer.cs"] = "unsafe class C { int M(delegate* unmanaged[Cdecl]<int> f) => f(); }",
+        });
+        bool pointerBlocked = false;
+        try
+        {
+            _ = BannedSymbolScanner.Scan(pointerCall, new ProjectClassification("fixture.csproj", ProjectRole.UserInterface, "ArcScope", Aot: true));
+        }
+        catch (InvalidOperationException exception) when (exception.Message.StartsWith(HostedPolicyGate.UnresolvedInvocation, StringComparison.Ordinal))
+        {
+            pointerBlocked = true;
+        }
+
+        Checks.True(pointerBlocked, "The engine now audits function-pointer calls: remove the executable's production-rule deferral in HostedPolicyGate.");
+
         // A reflection entry point is a finding only on a path classified as AOT; the category is not a blanket ban.
         var reflective = FixtureCompiler.Compile("Reflective", new Dictionary<string, string> { ["reflective.cs"] = BannedCases[0].Banned });
         Checks.Empty(BannedSymbolScanner.Scan(reflective, new ProjectClassification("fixture.csproj", ProjectRole.Infrastructure, "ArcScope", Aot: false)),
