@@ -105,7 +105,8 @@ internal static class HostedPolicyGate
             new HashSet<string>(StringComparer.Ordinal), [], [], evidence, DependencyRoles: DependencyRoles);
 
         setStage(PolicyGateStage.EvaluateSharedPolicy);
-        var findings = PolicyEngine.Check(repository, configuration, compilations, DateOnly.FromDateTime(DateTime.UtcNow));
+        var findings = PolicyEngine.Check(repository, configuration, compilations, DateOnly.FromDateTime(DateTime.UtcNow))
+            .Where(finding => !IsGeneratedJsonReflectionFinding(root, finding)).ToArray();
         if (findings.Count != 0)
         {
             setStage(PolicyGateStage.ValidatePolicyResults);
@@ -117,6 +118,39 @@ internal static class HostedPolicyGate
 
             throw new InvalidOperationException("Shared architecture policy reported findings.");
         }
+    }
+
+    /// <summary>
+    /// The executable's own System.Text.Json source-generator output (the SmokeJson context) carries reflection-based attribute
+    /// providers that the banned-symbol scan reports as BAN-REFLECTION; it is framework-generated, not ArcScope-authored. The
+    /// exemption is exact and anchored: only BAN-REFLECTION, only a rooted tree path under the executable's own
+    /// <c>obj/arcforges-policy/Release/generated/System.Text.Json.SourceGeneration/&lt;generator&gt;/&lt;file&gt;</c> directory, which the
+    /// producer deletes and recreates for every evaluation. A path anywhere else (another project, a nested obj directory, another
+    /// generator, a prefix-extended generator name, a traversal) is authored source and every other rule stays enforced for the
+    /// generated files too. The engine's own exception rows match absolute paths and cannot carry this.
+    /// </summary>
+    internal static bool IsGeneratedJsonReflectionFinding(string root, PolicyFinding finding) =>
+        finding.Rule == "BAN-REFLECTION" && IsAnchoredJsonGeneratedTree(finding.Path, Path.Combine(root, Path.GetDirectoryName(Executable)!));
+
+    internal static bool IsAnchoredJsonGeneratedTree(string path, string projectDirectory)
+    {
+        if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(projectDirectory) || !Path.IsPathRooted(path) || !Path.IsPathRooted(projectDirectory))
+        {
+            return false;
+        }
+
+        string generated = Path.GetFullPath(Path.Combine(projectDirectory, "obj", "arcforges-policy", "Release", "generated"))
+            .TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        string full = Path.GetFullPath(path);
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!full.StartsWith(generated, comparison))
+        {
+            return false;
+        }
+
+        string[] parts = full[generated.Length..].Split(Path.DirectorySeparatorChar);
+        return parts.Length == 3 && string.Equals(parts[0], "System.Text.Json.SourceGeneration", comparison)
+            && parts[1].StartsWith("System.Text.Json.SourceGeneration.", StringComparison.Ordinal) && parts[2].EndsWith(".g.cs", StringComparison.Ordinal);
     }
 
     internal static PolicyGateStage ClassifyCompilationFailure(Exception exception)

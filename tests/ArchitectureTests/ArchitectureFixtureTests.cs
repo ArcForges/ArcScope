@@ -110,6 +110,43 @@ internal static class ArchitectureFixtureTests
         }
 
         // The same constructs nested in the arguments of the pointer call are reported as well.
+        // The System.Text.Json generated reflection providers of the executable are exempt only at their exact anchored path.
+        string repo = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "arcscope-fixture"));
+        string project = Path.Combine(repo, "src", "ArcForges.ArcScope");
+        string Generated(params string[] parts) => Path.Combine([project, "obj", "arcforges-policy", "Release", "generated", .. parts]);
+        const string Json = "System.Text.Json.SourceGeneration";
+        const string JsonGenerator = "System.Text.Json.SourceGeneration.JsonSourceGenerator";
+        Checks.True(HostedPolicyGate.IsAnchoredJsonGeneratedTree(Generated(Json, JsonGenerator, "SmokeJson.SmokeReport.g.cs"), project),
+            "The executable's own JSON generator output was not recognised.");
+        foreach (string spoof in new[]
+        {
+            Path.Combine(project, "Authored.cs"),
+            Path.Combine(project, "Spoof", "obj", "arcforges-policy", "Release", "generated", Json, JsonGenerator, "X.g.cs"),
+            Path.Combine(repo, "src", "ArcForges.ArcScope.Core", "obj", "arcforges-policy", "Release", "generated", Json, JsonGenerator, "X.g.cs"),
+            Generated("Other.Generator", JsonGenerator, "X.g.cs"),
+            Generated(Json + "X", JsonGenerator, "X.g.cs"),
+            Generated(Json, "Other", "X.g.cs"),
+            Generated(Json, JsonGenerator, "X.cs"),
+            Generated(Json, JsonGenerator, "Nested", "X.g.cs"),
+            Generated(Json, JsonGenerator, "..", "..", "..", "..", "Authored.g.cs"),
+            Path.Combine([project, "obj", "arcforges-policy", "Debug", "generated", Json, JsonGenerator, "X.g.cs"]),
+            "relative/SmokeJson.g.cs",
+        })
+        {
+            Checks.True(!HostedPolicyGate.IsAnchoredJsonGeneratedTree(spoof, project), "A non-anchored path was exempted: " + spoof);
+        }
+
+        Checks.True(!HostedPolicyGate.IsAnchoredJsonGeneratedTree(Generated(Json, JsonGenerator, "X.g.cs"), Path.Combine(repo, "src", "Other")),
+            "Another project's generated directory was exempted.");
+        string anchored = Generated(Json, JsonGenerator, "SmokeJson.SmokeReport.g.cs");
+        Checks.True(HostedPolicyGate.IsGeneratedJsonReflectionFinding(repo, new PolicyFinding("BAN-REFLECTION", anchored, "m", 1)),
+            "The generated reflection finding was not exempted.");
+        foreach (string rule in new[] { "BAN-BLOCKING", "BAN-CODEGEN", "BAN-MONEY", "BAN-POINTER", "BAN-PROVIDER", "BAN-LOGGING", "AT-12" })
+        {
+            Checks.True(!HostedPolicyGate.IsGeneratedJsonReflectionFinding(repo, new PolicyFinding(rule, anchored, "m", 1)),
+                "A rule other than BAN-REFLECTION was exempted in the generated tree: " + rule);
+        }
+
         var nested = FixtureCompiler.Compile("PointerNested", new Dictionary<string, string>
         {
             ["nested.cs"] = "internal static unsafe class N { internal static delegate* unmanaged<int, int> F; internal static int Run() => F(System.Type.GetType(\"Example\")!.GetHashCode()); }",
