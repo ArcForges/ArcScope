@@ -16,7 +16,7 @@ dotnet run --project src/ArcForges.ArcScope
 dotnet run --project eng/ArcForges.Repository -- hooks
 ```
 
-The UI, application state and repository tool are C#. Avalonia/Skia supply packaged native UI/rendering dependencies. The application consumes `ArcForges.Contracts.PublicApi` **1.0.0-ci.36.1** and the private build-time `ArcForges.Build.Policy` **1.0.0-ci.94.1**. The PRF.02 package proof additionally pins DesktopPlatform primitives and Image ABI packages **1.0.0-ci.29.1** plus Foundation/LocalRpc.Scope Contracts **1.0.0-ci.113.1**. The native Image runtime is selected only for Windows x64; its [local opt-in proof](docs/prf-02-native-proof.md) does not claim other native RIDs, embedded assistant or private child-channel acceptance.
+The UI, application state and repository tool are C#. Avalonia/Skia supply packaged native UI/rendering dependencies. The application consumes `ArcForges.Contracts.PublicApi` **1.0.0-ci.36.1** and the private build-time `ArcForges.Build.Policy` **1.0.0-ci.100.1**. The PRF.02 package proof additionally pins DesktopPlatform primitives and Image ABI packages **1.0.0-ci.29.1** plus Foundation/LocalRpc.Scope Contracts **1.0.0-ci.113.1**. The native Image runtime is selected only for Windows x64; its [local opt-in proof](docs/prf-02-native-proof.md) does not claim other native RIDs, embedded assistant or private child-channel acceptance.
 
 ## Downloads and automation
 
