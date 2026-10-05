@@ -106,7 +106,7 @@ internal static class HostedPolicyGate
 
         setStage(PolicyGateStage.EvaluateSharedPolicy);
         var findings = PolicyEngine.Check(repository, configuration, compilations, DateOnly.FromDateTime(DateTime.UtcNow))
-            .Where(finding => !IsGeneratedJsonReflectionFinding(root, finding)).ToArray();
+            .Where(finding => !IsGeneratedJsonReflectionFinding(root, finding)).ToList();
         if (findings.Count != 0)
         {
             setStage(PolicyGateStage.ValidatePolicyResults);
