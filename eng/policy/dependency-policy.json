@@ -9,13 +9,13 @@
   "packages": [
     {
       "id": "ArcForges.Build.Policy",
-      "version": "1.0.0-ci.94.1",
-      "contentHash": "PCpeEXikk2m87zhMF6L8tbHe2QrI87mO4Nc5lJBenEDhOePwwV4TkArc6IaM1G11Pm8ojVjurLAIoPW22ozb/A==",
+      "version": "1.0.0-ci.100.1",
+      "contentHash": "gwnkSdJsIKHUQe/5BYLFIXZLQuxAXd6est4kfQa4K77YSgVspaHwxfpD77Cn4lA+izEZ86eUYOExyNpwznlA+Q==",
       "licence": "AGPL-3.0-only",
       "licenceEvidence": "Published package nuspec declares SPDX expression AGPL-3.0-only; existing packaged upstream notices remain authoritative for bundled material.",
       "sourceRepository": "https://github.com/ArcForges/DesktopPlatform",
-      "sourceCommit": "d6e3fabf4dea2112d9c594c5eb5ac7f679c8be20",
-      "nuspecSha256": "bd85acc0b99828a7e9c52751a9d57059fbaa7130986871a562e37b7f6b971c7c",
+      "sourceCommit": "88fe5996b5835abd8911ab9036fda67743461f18",
+      "nuspecSha256": "3ea6149fde67d7b139750b99881539e6b39418fa222947aa73c2c3487ba4c306",
       "dependencyClass": "tooling",
       "maintenanceAssessment": "Retain the already admitted pinned release and upstream source identity; no new dependency or current upstream support/freshness claim. Existing dependency-review/security gates review changes; the product owner must assess replacement or vulnerabilities before an upgrade.",
       "previewAdmission": "exact-foundation-candidate"
