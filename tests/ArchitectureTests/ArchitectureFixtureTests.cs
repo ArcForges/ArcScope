@@ -63,28 +63,59 @@ internal static class ArchitectureFixtureTests
             }
         }
 
-        // Known engine limit that justifies the executable's deferral: an unmanaged function-pointer call cannot be audited and the
-        // scan fails closed. If this stops throwing, the engine was repaired: restore Production: true for the executable.
-        var pointerCall = FixtureCompiler.Compile("PointerCall", new Dictionary<string, string>
-        {
-            ["pointer.cs"] = "unsafe class C { int M(delegate* unmanaged[Cdecl]<int> f) => f(); }",
-        });
-        bool pointerBlocked = false;
-        try
-        {
-            _ = BannedSymbolScanner.Scan(pointerCall, new ProjectClassification("fixture.csproj", ProjectRole.UserInterface, "ArcScope", Aot: true));
-        }
-        catch (InvalidOperationException exception) when (exception.Message.StartsWith(HostedPolicyGate.UnresolvedInvocation, StringComparison.Ordinal))
-        {
-            pointerBlocked = true;
-        }
-
-        Checks.True(pointerBlocked, "The engine now audits function-pointer calls: remove the executable's production-rule deferral in HostedPolicyGate.");
+        ExecutableProductionFixtures();
 
         // A reflection entry point is a finding only on a path classified as AOT; the category is not a blanket ban.
         var reflective = FixtureCompiler.Compile("Reflective", new Dictionary<string, string> { ["reflective.cs"] = BannedCases[0].Banned });
         Checks.Empty(BannedSymbolScanner.Scan(reflective, new ProjectClassification("fixture.csproj", ProjectRole.Infrastructure, "ArcScope", Aot: false)),
             "Reflection was reported on a path that is not classified as AOT.");
+    }
+
+    // The Native AOT executable is a production project that makes unmanaged function-pointer calls (NativePackageProof.cs).
+    // The shared engine audits such a file: the calls alone are clean, and every banned category added next to or inside
+    // them is still reported in the executable's own role.
+    private const string PointerProof = """
+        using System.Runtime.InteropServices;
+        internal static unsafe class Proof
+        {
+            internal static int Run(nint library)
+            {
+                var negotiate = (delegate* unmanaged[Cdecl]<uint*, uint*, int>)NativeLibrary.GetExport(library, "abi_version");
+                uint minor = 0;
+                return negotiate(null, &minor);
+            }
+        }
+        """;
+
+    private static void ExecutableProductionFixtures()
+    {
+        var executable = new ProjectClassification("exe.csproj", ProjectRole.UserInterface, "ArcScope", Production: true, Aot: true);
+        var clean = FixtureCompiler.Compile("PointerProof", new Dictionary<string, string> { ["proof.cs"] = PointerProof });
+        Checks.Empty(BannedSymbolScanner.Scan(clean, executable), "The executable's function-pointer call was reported or not audited.");
+
+        // Mutants of the executable: each adds one banned construct to the same file and must be reported once, as its category.
+        (string Rule, string Added)[] mutants =
+        [
+            ("BAN-BLOCKING", "internal static class Extra { internal static async System.Threading.Tasks.Task Run() { await System.Threading.Tasks.Task.Yield(); System.Threading.Tasks.Task.Delay(1).Wait(); } }"),
+            ("BAN-REFLECTION", "internal static class Extra { internal static object? Run() => System.Type.GetType(\"Example\"); }"),
+            ("BAN-MONEY", "internal static class Money { internal static double Price(double value) => value + 1d; }"),
+            ("BAN-CODEGEN", "internal static class Extra { internal static object Run() => new System.Reflection.Emit.DynamicMethod(\"example\", typeof(void), System.Type.EmptyTypes); }"),
+            ("BAN-POINTER", "internal static class Extra { internal static System.IntPtr Handle; }"),
+        ];
+        foreach (var (rule, added) in mutants)
+        {
+            var mutant = FixtureCompiler.Compile("PointerProofMutant", new Dictionary<string, string> { ["proof.cs"] = PointerProof + "\n" + added });
+            Checks.True(BannedSymbolScanner.Scan(mutant, executable).Any(finding => finding.Rule == rule),
+                $"The executable mutant was not reported as {rule}.");
+        }
+
+        // The same constructs nested in the arguments of the pointer call are reported as well.
+        var nested = FixtureCompiler.Compile("PointerNested", new Dictionary<string, string>
+        {
+            ["nested.cs"] = "internal static unsafe class N { internal static delegate* unmanaged<int, int> F; internal static int Run() => F(System.Type.GetType(\"Example\")!.GetHashCode()); }",
+        });
+        Checks.True(BannedSymbolScanner.Scan(nested, executable).Any(finding => finding.Rule == "BAN-REFLECTION"),
+            "A reflection entry point nested in a function-pointer call was not reported.");
     }
 
     // WP-05.00: each layering rule has a passing positive case and a failing negative case in the shared engine.

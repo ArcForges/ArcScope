@@ -26,19 +26,17 @@ internal static class HostedPolicyGate
     // - Core is the offline-first client library (the gRPC-Web client over the published public contract and view-models).
     //   It holds transport, so it is Infrastructure rather than Application until its ports are separated by a later task.
     // - The executable is the Avalonia Native AOT shell; it composes Core and is the AOT deliverable.
-    // DEFERRED: the executable is classified Production: false only because the shared engine fails closed with
-    // "Unresolved invocation cannot be audited" on the unmanaged function-pointer calls in NativePackageProof.cs (a local
-    // opt-in native proof), so it cannot yet run the banned-API, public-API or layer rules for production code. The deferral is
-    // exact and self-expiring: DeferredExecutableScanIsStillBlocked fails once the engine can audit that file, and the
-    // ArchitectureFixtureTests function-pointer fixture fails with it. Until then the executable still gets the layering,
-    // licence, AOT-fence and contract-consumption rules; only the production-only rules are deferred.
+    // The executable is classified Production: true. The shared engine audits its unmanaged function-pointer calls
+    // (NativePackageProof.cs) since Build.Policy 1.0.0-ci.100.1 (GOV.20), so the banned-API scan, the public-API test binding and
+    // the production-only layer rules apply to it like to every production project. A function-pointer call itself is not a
+    // banned API; the engine still audits its arguments, and any other invocation it cannot resolve still fails the scan.
     // Domain is not classified AOT because its project does not yet declare IsAotCompatible; the task that references it
     // from the AOT executable must declare the property and flip the classification (RP-07 then covers it).
     internal static readonly IReadOnlyList<ProjectClassification> Classifications =
     [
         new("src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj", ProjectRole.Domain, "ArcScope", Production: true, Aot: false),
         new("src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj", ProjectRole.Infrastructure, "ArcScope", Production: true, Aot: true),
-        new("src/ArcForges.ArcScope/ArcForges.ArcScope.csproj", ProjectRole.UserInterface, "ArcScope", Production: false, Aot: true),
+        new("src/ArcForges.ArcScope/ArcForges.ArcScope.csproj", ProjectRole.UserInterface, "ArcScope", Production: true, Aot: true),
         new("tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj", ProjectRole.Test, "ArcScope", Production: false, Aot: false),
         new(HostProject, ProjectRole.Test, "ArcScope", Production: false, Aot: false),
         new("eng/ArcForges.Repository/ArcForges.Repository.csproj", ProjectRole.BuildTool, "ArcScope", Production: false, Aot: false),
@@ -90,7 +88,7 @@ internal static class HostedPolicyGate
         setStage(PolicyGateStage.ValidateContractConsumption);
         VerifyContractConsumption(root, projects, compilations);
 
-        VerifyDeferredExecutableScanIsStillBlocked(projects, compilations);
+        VerifyExecutableIsClassifiedAsProduction(projects);
 
         setStage(PolicyGateStage.ReadDependencyPolicy);
         var dependency = ReadDependencyPolicy(root);
@@ -282,30 +280,18 @@ internal static class HostedPolicyGate
         }
     }
 
-    internal const string DeferredExecutable = "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj";
-    internal const string UnresolvedInvocation = "Unresolved invocation cannot be audited";
+    internal const string Executable = "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj";
 
     /// <summary>
-    /// The production-only rules of the executable are deferred for exactly one reason. Run the real banned-API scan as if the
-    /// executable were production: it must still fail closed on NativePackageProof.cs and nowhere else. When it passes or
-    /// fails differently, the deferral is obsolete or wrong and the gate fails.
+    /// The executable once deferred its production-only rules. Pin the classification so that it cannot silently return to
+    /// non-production: the banned-API scan of the production projects below then covers it, including its unmanaged
+    /// function-pointer calls.
     /// </summary>
-    private static void VerifyDeferredExecutableScanIsStillBlocked(IReadOnlyList<ProjectFacts> projects,
-        IReadOnlyDictionary<string, CSharpCompilation> compilations)
+    private static void VerifyExecutableIsClassifiedAsProduction(IReadOnlyList<ProjectFacts> projects)
     {
-        var executable = projects.Single(project => project.Classification.Path == DeferredExecutable);
-        Checks.True(!executable.Classification.Production, "The deferral record and the classification disagree.");
-        bool blocked = false;
-        try
-        {
-            _ = BannedSymbolScanner.Scan(compilations[DeferredExecutable], executable.Classification with { Production = true });
-        }
-        catch (InvalidOperationException exception) when (exception.Message.StartsWith(UnresolvedInvocation, StringComparison.Ordinal))
-        {
-            blocked = exception.Message.Contains("NativePackageProof.cs", StringComparison.Ordinal);
-        }
-
-        Checks.True(blocked, "The engine now audits the executable (or fails elsewhere): remove the production-rule deferral.");
+        var executable = projects.Single(project => project.Classification.Path == Executable);
+        Checks.True(executable.Classification.Production && executable.Classification.Aot,
+            "The Native AOT executable must be classified as a production AOT project.");
     }
 
     private static (Dictionary<string, string> Hashes, Dictionary<string, string> Licenses) ReadDependencyPolicy(string root)

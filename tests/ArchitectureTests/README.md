@@ -27,11 +27,13 @@ Rule coverage
 Project roles are reviewed in `HostedPolicyGate.Classifications`; the set must equal the solution. ArcScope is AGPL-3.0-only, so
 no RP-03 exception exists or is permitted.
 
-Known deferral (honest limit)
+Executable classification
 
-The shared engine fails closed ("Unresolved invocation cannot be audited") on the unmanaged function-pointer calls in
-`src/ArcForges.ArcScope/NativePackageProof.cs`, so the executable is classified `Production: false` and its production-only rules
-(banned-API scan, public-API test binding, layer rules that apply to production projects) are not enforced. Layering, licence, AOT
-fence and contract-consumption rules still cover it. The deferral is self-expiring: a fixture and a hosted check assert that the
-engine still cannot audit that file and fail once it can, which forces `Production: true` to be restored. Repairing the engine
-is a shared Build.Policy change, not part of this task.
+The Native AOT executable is classified `Production: true`. Until Build.Policy 1.0.0-ci.100.1 (GOV.20) the shared engine failed
+closed on the unmanaged function-pointer calls in `src/ArcForges.ArcScope/NativePackageProof.cs`, so the executable had been
+classified `Production: false` and its production-only rules were deferred. The engine now audits those calls (a function-pointer
+call is not a banned API; its arguments are still scanned and any other unresolvable invocation still fails the scan), so the
+banned-API scan, the public-API test binding and the production-only layer rules apply to the executable like any production
+project. Fixtures pin that a function-pointer file is clean and that every banned category added to it is reported in the
+executable's role. Not covered: a taken address (`&Banned.Method`, a method group) is not audited as an invocation, the same gap as
+any method-group conversion in the engine.
