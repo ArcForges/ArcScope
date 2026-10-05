@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "rule": "BAN-REFLECTION",
+    "path": "src/ArcForges.ArcScope/obj/arcforges-policy/Release/generated/System.Text.Json.SourceGeneration/System.Text.Json.SourceGeneration.JsonSourceGenerator/SmokeJson.CloudHealth.g.cs",
+    "owner": "ArcScope",
+    "reason": "System.Text.Json source-generator output for the executable's own SmokeJson context (CloudHealth, src/ArcForges.ArcScope/LiveSmoke.cs): the framework generator emits reflection-based AttributeProviderFactory and ConstructorAttributeProviderFactory delegates (Type.GetProperty/GetConstructor) as attribute providers beside its compile-time metadata, which the shared banned-symbol scan reports as BAN-REFLECTION on the Native AOT path. Generated, not authored, code; the source type and serializer registration are unchanged. Carried until the shared engine recognises or excludes generated trees in the banned-API scan, or the smoke context is removed or restructured; not a waiver for any authored file.",
+    "expires": "2027-04-05"
+  },
+  {
+    "rule": "BAN-REFLECTION",
+    "path": "src/ArcForges.ArcScope/obj/arcforges-policy/Release/generated/System.Text.Json.SourceGeneration/System.Text.Json.SourceGeneration.JsonSourceGenerator/SmokeJson.SmokeReport.g.cs",
+    "owner": "ArcScope",
+    "reason": "System.Text.Json source-generator output for the executable's own SmokeJson context (SmokeReport, src/ArcForges.ArcScope/LiveSmoke.cs): the framework generator emits reflection-based AttributeProviderFactory and ConstructorAttributeProviderFactory delegates (Type.GetProperty/GetConstructor) as attribute providers beside its compile-time metadata, which the shared banned-symbol scan reports as BAN-REFLECTION on the Native AOT path. Generated, not authored, code; the source type and serializer registration are unchanged. Carried until the shared engine recognises or excludes generated trees in the banned-API scan, or the smoke context is removed or restructured; not a waiver for any authored file.",
+    "expires": "2027-04-05"
+  }
+]
