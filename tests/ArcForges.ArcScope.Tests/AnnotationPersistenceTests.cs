@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+using System.Buffers.Binary;
+using System.Security.Cryptography;
+using System.Text;
 using ArcForges.ArcScope.Core.Infrastructure;
 using ArcForges.Contracts.Foundation.Values;
 using ArcForges.Contracts.PublicApi.V1;
@@ -148,6 +151,54 @@ public sealed class AnnotationPersistenceTests
         Assert.True(await second.TryCreateAsync(new(Guid.NewGuid(), 1, [2]), TestContext.Current.CancellationToken));
         Assert.NotEqual(store.Read("first", fixture.Partition)!.Origin.ContentUnitId,
             store.Read("second", fixture.Partition)!.Origin.ContentUnitId);
+    }
+
+    [Theory]
+    [InlineData("future-format")]
+    [InlineData("foreign-content-unit")]
+    [InlineData("invalid-record-version")]
+    public async Task AnUnreadableOwnerFormatIsPreservedAndCannotBeOverwritten(string defect)
+    {
+        using var fixture = new Database();
+        using var store = fixture.Open();
+        var repository = fixture.Repository(store);
+        var session = Guid.NewGuid();
+        Assert.True(await repository.TryCreateAsync(session, new() { SessionId = UuidBoundary.ToWire(session), Name = "retained evidence" }, TestContext.Current.CancellationToken));
+        const string kind = "arcscope.annotation.sessions.v1";
+        var before = store.Read(kind, fixture.Partition)!;
+        var payload = before.Payload.ToArray();
+        var origin = before.Origin;
+        using (var stream = new MemoryStream(payload, writable: false))
+        using (var reader = new BinaryReader(stream, Encoding.UTF8))
+        {
+            _ = reader.ReadString();
+            if (defect == "future-format") payload[checked((int)stream.Position - 1)] = (byte)'2';
+            else if (defect == "invalid-record-version")
+            {
+                Assert.Equal(1, reader.ReadInt32());
+                _ = reader.ReadBytes(16);
+                BinaryPrimitives.WriteInt64LittleEndian(payload.AsSpan(checked((int)stream.Position), 8), 0);
+            }
+        }
+        if (defect == "foreign-content-unit") origin.ContentUnitId = new ContentUnitId(Guid.NewGuid()).ToWire();
+        origin.OriginId = new ContentOriginId(Guid.NewGuid()).ToWire();
+        origin.ParentOriginIds.Clear();
+        origin.ParentOriginIds.Add(before.Origin.OriginId.Clone());
+        origin.PayloadSha256 = Convert.ToHexStringLower(SHA256.HashData(payload));
+        // Persist a structurally valid container with an unsupported/corrupt application-owned format.
+        // The actual owner must refuse it without deleting evidence or silently creating an empty registry.
+        _ = store.Write(new(new CommandId(Guid.NewGuid()), kind, fixture.Partition, before.Version,
+            new StoredContent(StoreVersion.Native(new NativeRevision(2)), payload, origin), "fixture.owner-format", fixture.Actor,
+            Guid.NewGuid(), Clock.System.GetCurrentInstant()));
+        Assert.Throws<InvalidDataException>(() => repository.Read(session));
+        var proposed = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await repository.TryCreateAsync(proposed,
+            new() { SessionId = UuidBoundary.ToWire(proposed) }, TestContext.Current.CancellationToken));
+        var after = store.Read(kind, fixture.Partition)!;
+        Assert.Equal(payload, after.Payload.ToArray());
+        Assert.Equal(origin, after.Origin);
+        Assert.Equal(StoreVersion.Native(new NativeRevision(2)), after.Version);
+        Assert.Equal(2, store.ReadJournal(null, 100).Count);
     }
 
     private static ScopeAnnotation Note(Guid id, string text)
