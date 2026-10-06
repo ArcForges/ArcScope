@@ -281,7 +281,9 @@ public sealed class ProductInvocationRecordStore : IInvocationRecordStore, IDisp
         var id = reader.ReadBytes(16);
         var fingerprint = reader.ReadBytes(32);
         if (id.Length != 16 || fingerprint.Length != 32) throw new EndOfStreamException();
-        var outcome = reader.ReadBoolean() ? Bytes(reader) : null;
+        var presence = reader.ReadByte();
+        if (presence > 1) throw new InvalidDataException("Invalid stored invocation outcome presence.");
+        var outcome = presence == 1 ? Bytes(reader) : null;
         if (stream.Position != stream.Length || entry.Version != (outcome is null ? 1 : 2) || new Guid(id) == Guid.Empty)
             throw new InvalidDataException("Invalid invocation reservation lifecycle or trailing data.");
         return new(new Guid(id), fingerprint, outcome);

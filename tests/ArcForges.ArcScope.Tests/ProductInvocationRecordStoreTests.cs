@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+using System.Security.Cryptography;
+using System.Text;
 using ArcForges.ArcScope.Core.Application;
 using ArcForges.ArcScope.Core.Infrastructure;
 using ArcForges.Capabilities;
@@ -157,6 +159,46 @@ public sealed class ProductInvocationRecordStoreTests
         Assert.Empty(sqlite.ReadJournal(null, 100));
     }
 
+    [Fact]
+    public async Task CorruptTerminalPresenceCannotBeReplayedOrOverwriteTheDurableEvidence()
+    {
+        using var database = new Database();
+        using var sqlite = database.Open();
+        using var journal = database.Journal(sqlite);
+        var command = UuidBoundary.ToWire(Guid.NewGuid());
+        var claim = Value(await journal.BeginAsync(command, Fingerprint(), Cancellation));
+        _ = Value(await journal.CompleteAsync(claim, InvocationOutcome.Cancelled(EffectCertainty.Happened), Cancellation));
+        const string kind = "arcscope.capability.invocations.v1";
+        var before = sqlite.Read(kind, database.Partition)!;
+        var payload = before.Payload.ToArray();
+        using (var stream = new MemoryStream(payload, writable: false))
+        using (var reader = new BinaryReader(stream, Encoding.UTF8))
+        {
+            _ = reader.ReadString();
+            Assert.Equal(1, reader.ReadInt32());
+            _ = reader.ReadBytes(16);
+            Assert.Equal(2, reader.ReadInt64());
+            _ = reader.ReadInt32();
+            _ = reader.ReadString();
+            _ = reader.ReadBytes(16 + 32);
+            Assert.Equal(1, payload[checked((int)stream.Position)]);
+            payload[checked((int)stream.Position)] = 2;
+        }
+        var origin = before.Origin;
+        origin.OriginId = new ContentOriginId(Guid.NewGuid()).ToWire();
+        origin.ParentOriginIds.Clear();
+        origin.ParentOriginIds.Add(before.Origin.OriginId.Clone());
+        origin.PayloadSha256 = Convert.ToHexStringLower(SHA256.HashData(payload));
+        _ = sqlite.Write(new(new CommandId(Guid.NewGuid()), kind, database.Partition, before.Version,
+            new StoredContent(StoreVersion.Native(new NativeRevision(3)), payload, origin), "fixture.journal-format", database.Actor,
+            Guid.NewGuid(), Clock.System.GetCurrentInstant()));
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await journal.BeginAsync(command, Fingerprint(), Cancellation));
+        await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            await journal.CompleteAsync(claim, InvocationOutcome.Cancelled(EffectCertainty.Happened), Cancellation));
+        Assert.Equal(payload, sqlite.Read(kind, database.Partition)!.Payload.ToArray());
+        Assert.Equal(3, sqlite.ReadJournal(null, 100).Count);
+    }
+
     private static T Value<T>(Outcome<T> outcome) where T : class
     {
         Assert.True(outcome.TryGetValue(out var value));
@@ -171,6 +213,7 @@ public sealed class ProductInvocationRecordStoreTests
         private readonly UserId actor = new(Guid.NewGuid());
         private readonly CapabilityRegistry catalogue = CapabilityRegistry.CreateInitial();
         internal Guid Partition { get; } = Guid.NewGuid();
+        internal UserId Actor => actor;
         internal CapabilityInvocationBinding Binding { get; }
         internal Database()
         {
