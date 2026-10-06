@@ -2,7 +2,7 @@ ArcForges source provenance notices
 
 Generated from reviewed active records. Original licence files and dependency notices remain authoritative.
 
-app-02-provenance-tools-r1
+app-02-provenance-tools-r2
 Source: https://github.com/ArcForges/ArcNotes @ b7358bd7b1dca0671cd51cf6d798d5c09911b198
 Material licence: AGPL-3.0-only
 Notice scope: source
@@ -16,6 +16,7 @@ ArcScope owner modifications: SCOPE.02 adds exact Domain project and test-refere
 ArcScope owner modifications: GOV.07 adds the package-free architecture-policy host and its canonical naming evidence adapter, moves the shared Build.Policy pin to the published GOV.06 candidate, and wires the hosted policy gate into the existing pull-request quality job; no other package coordinate, version or dependency closure changed.
 ArcScope owner modifications: the GOV.07 completion follow-up moves only the shared build-only Build.Policy pin from the published GOV.06 candidate 1.0.0-ci.94.1 to the published GOV.20 candidate 1.0.0-ci.100.1 (exact lock hash, nuspec and DesktopPlatform source commit 88fe599), reseals the review inputs it changes and restores the executable's production-only rules; no other coordinate, dependency or closure change.
 ArcScope owner modifications: APP.02 adds exact published production Security/Capabilities/Persistence and generated Contracts/SDK closure, reviewed SQLite owner-store runtime, and complete owner services with real persistent stores. Historical native Image29.1 ABI1.0 proof is retained; source release references without nuspec build commits are explicitly labelled.
+ArcScope owner modifications: APP.02 validates current Contracts producer identity from its real semantic report, descriptor and complete hash-bound raw public schemas; no package version is substituted for a contract major. Exact admitted first-party licensing and mixed native evidence are preserved.
 Copyright ArcForges contributors. ArcScope adapts ArcNotes dependency admission and retained support tooling under AGPL-3.0-only; original Apache checker attribution remains retained.
 
 canonical-agpl-legal-r1

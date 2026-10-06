@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "id": "app-02-provenance-tools-r2",
+  "kind": "source",
+  "sourceRepository": "https://github.com/ArcForges/ArcNotes",
+  "sourceCommit": "b7358bd7b1dca0671cd51cf6d798d5c09911b198",
+  "sourcePaths": [
+    "eng/ArcForges.Repository/ProvenancePolicy.cs",
+    "eng/ArcForges.Repository/Program.cs",
+    "tests/ArcForges.ArcNotes.Tests/ProvenancePolicyTests.cs",
+    "tests/ArcForges.ArcNotes.Tests/CandidateTests.cs",
+    "eng/ArcForges.Repository/DependencyPolicy.cs",
+    "eng/ArcForges.Repository/IdentityEvidence.cs",
+    "src/ArcForges.ArcNotes.Core/BuildIdentity.cs",
+    "tests/ArcForges.ArcNotes.Tests/BuildIdentityTests.cs",
+    "Directory.Build.targets",
+    "Directory.Build.props",
+    "Directory.Packages.props",
+    "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+    "src/ArcForges.ArcNotes/ArcForges.ArcNotes.csproj",
+    "src/ArcForges.ArcNotes/Program.cs",
+    "src/ArcForges.ArcNotes/LiveSmoke.cs",
+    ".github/workflows/ci.yml",
+    "eng/version-sources.json",
+    "docs/dependency-policy.md",
+    "eng/policy/dependency-policy.json",
+    "tests/ArcForges.ArcNotes.Tests/DependencyPolicyTests.cs",
+    "eng/policy/dependency-review.json"
+  ],
+  "licence": {
+    "spdx": "AGPL-3.0-only",
+    "category": "agpl-compatible",
+    "evidence": [
+      {
+        "path": "LICENSE",
+        "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+        "finding": "AGPL-3.0-only source/header or owner build/policy metadata from the same immutable ArcNotes revision; original Apache provenance-checker attribution remains retained."
+      }
+    ],
+    "scope": "Retain immutable ArcNotes and original Contracts checker attribution. APP.02 admits the actual published Foundation/Application/Capabilities/Security/Persistence114.1 and Contracts/SDK324.1 closure, exact SQLite owner-store runtime, central selectors/project locks and native-proof mixed-package metadata; no framework major change or replacement native acceptance proof.",
+    "copyingPermission": null
+  },
+  "attribution": [
+    "Copyright ArcForges contributors. ArcNotes support identity and tooling: AGPL-3.0-only.",
+    "Original provenance checker from Contracts: Apache-2.0; complete source terms and attribution retained.",
+    "ArcScope adapts product identity and future format/storage owner declarations.",
+    "ArcScope owner modifications: reduce hosted CI to Windows/Linux compilation and offline checks; remove mandatory runtime evidence and redundant validation.",
+    "ArcScope owner modifications: add reviewed dependency policy, upgrade records and offline negative fixtures adapted from ArcNotes b7358bd7b1dca0671cd51cf6d798d5c09911b198.",
+    "ArcScope owner modifications: reviewed dependency updates are recorded in the owner dependency admission and review inputs.",
+    "ArcScope owner modifications: SCOPE.02 adds exact Domain project and test-reference input hashes; no package coordinate, version, dependency closure or CI workflow change.",
+    "ArcScope owner modifications: GOV.07 adds the package-free architecture-policy host and its canonical naming evidence adapter, moves the shared Build.Policy pin to the published GOV.06 candidate, and wires the hosted policy gate into the existing pull-request quality job; no other package coordinate, version or dependency closure changed.",
+    "ArcScope owner modifications: the GOV.07 completion follow-up moves only the shared build-only Build.Policy pin from the published GOV.06 candidate 1.0.0-ci.94.1 to the published GOV.20 candidate 1.0.0-ci.100.1 (exact lock hash, nuspec and DesktopPlatform source commit 88fe599), reseals the review inputs it changes and restores the executable's production-only rules; no other coordinate, dependency or closure change.",
+    "ArcScope owner modifications: APP.02 adds exact published production Security/Capabilities/Persistence and generated Contracts/SDK closure, reviewed SQLite owner-store runtime, and complete owner services with real persistent stores. Historical native Image29.1 ABI1.0 proof is retained; source release references without nuspec build commits are explicitly labelled.",
+    "ArcScope owner modifications: APP.02 validates current Contracts producer identity from its real semantic report, descriptor and complete hash-bound raw public schemas; no package version is substituted for a contract major. Exact admitted first-party licensing and mixed native evidence are preserved."
+  ],
+  "targets": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "169f0e616f21d258d851b6c7100529e31d6b63a51b05cf032db0183227f8cbe7",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "9d567c843c8af63df502a0a1752767d183a1db2a7e52ebd2690c7edbbae008eb",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Build.targets",
+      "sha256": "ff01198f816a04667ade99836d5b57e0fb78067972d2c852f2e8c1e8eea3f138",
+      "normalization": "lf"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "1c6fc8500bae97baf5da4761a864888159009ca09d673134f03af3dc64555b36",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ArcForges.Repository.csproj",
+      "sha256": "b8b811d878528c9fcff4e37fa4acd46ea5ce08221ff782183d201daffd010e33",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/IdentityEvidence.cs",
+      "sha256": "34ba4f1b98dc95227e412628cb5ce8f46ac3796afce2eab8a4ab6b51e3bae1dc",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/Program.cs",
+      "sha256": "1b89ecb457afbd25e82e43483c8d7cbc25d32d5851a9945f4ff2cd4c484baff4",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/ProvenancePolicy.cs",
+      "sha256": "cb53d777f75ab803d3681f1b102cd0d9ae1a558202900f28ee79101eb34e5aea",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/version-sources.json",
+      "sha256": "2527843f86e1a5fc560dc58bd6ea4ca0ca8dce4d2afce7289b281066d626173e",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope.Core/BuildIdentity.cs",
+      "sha256": "9183ba83914681086dd05885a925d4ff80342d2ef8f4eb0af50f2edbde7c03eb",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj",
+      "sha256": "1e1d06c3d9f5545e2b591509d0926ba1ff44e822d70237cdeb25890a05732ce3",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/LiveSmoke.cs",
+      "sha256": "f3a5f1ff85b6d35bd65a173b0c0c55df425f9117a7a4deb7a6510731b7b9b35d",
+      "normalization": "lf"
+    },
+    {
+      "path": "src/ArcForges.ArcScope/Program.cs",
+      "sha256": "f4c974d1dc3024a5859605c9ae040b3f37167c0c480895ae5c0404626fa07ff8",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/BuildIdentityTests.cs",
+      "sha256": "dc7b089bf28ec25d4b560c89d8eaeaea11072de4920c1cd5af625fddb03ac9f6",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/CandidateTests.cs",
+      "sha256": "0ce2de28dcde626413e414365ee8d5df52332016b228f4a94c865b3a235a4258",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/ProvenancePolicyTests.cs",
+      "sha256": "1772f9bcb9d0e681a979ae29437701478cdf706adaed66a2508bde5ac626f74a",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/ArcForges.Repository/DependencyPolicy.cs",
+      "sha256": "8e1603e1d01eb8350e74523621c897a180b8b231386540714cfd154d78027ac9",
+      "normalization": "lf"
+    },
+    {
+      "path": "docs/dependency-policy.md",
+      "sha256": "c2c87a4a8b6402abb1aa82060431b33efc66bbfba09635b58c03fbb6e120a7ad",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-policy.json",
+      "sha256": "f777a56720d876d305734fe49fec623b5d58225c801b8205ec3d2a0a7e636d22",
+      "normalization": "lf"
+    },
+    {
+      "path": "tests/ArcForges.ArcScope.Tests/DependencyPolicyTests.cs",
+      "sha256": "f0656f5e5c0ffa11e1382464b65dccd48f2e9e30c47dd8b181ece7e8c631a11a",
+      "normalization": "lf"
+    },
+    {
+      "path": "eng/policy/dependency-review.json",
+      "sha256": "39c7f07f9ab9a9f35bd7988d2adc5a64439bece57457b957e2da819ea9a38d47",
+      "normalization": "lf"
+    }
+  ],
+  "artifactTargets": [],
+  "disposition": "Rewrite",
+  "verification": {
+    "kind": "transformation",
+    "command": "dotnet restore ArcScope.slnx --locked-mode; build the solution and execute the existing ArcForges.ArcScope.Tests suite; dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check",
+    "expected": "All actual111 locked dependencies, normal published source identities and exact nuspec/licence hashes pass policy; six-lock ordinary restore/full Release build are zero diagnostic. Applicable ordinary component and CI tests remain required. No mocked external dependency is claimed as deployment or OS proof.",
+    "artifacts": []
+  },
+  "notice": {
+    "required": true,
+    "text": "Copyright ArcForges contributors. ArcScope adapts ArcNotes dependency admission and retained support tooling under AGPL-3.0-only; original Apache checker attribution remains retained.",
+    "files": [
+      "LICENSE",
+      "README.md",
+      "eng/third-party/LICENSE.Contracts.txt",
+      "eng/provenance/NOTICE.txt"
+    ],
+    "distribution": "source",
+    "reason": "The full corresponding source retains these origin records and original terms. Compiled support code remains AGPL; portable packages already include the complete root licence and README origin/source pointer. Checker/tool-only Apache code is not linked into the application."
+  },
+  "lifetime": {
+    "status": "permanent",
+    "owner": "ArcScope Licensing and Provenance Owner",
+    "removalTrigger": null
+  },
+  "generation": null,
+  "review": {
+    "owner": "Licensing and Provenance Owner",
+    "reviewer": "Codex APP.02 claimant; independent exact-head PR review required",
+    "reviewedOn": "2026-10-07",
+    "decision": "approved",
+    "rationale": "APP.02 reviewed minimum producer-identity repair: verify actual published Contracts324 provenance/report against all authored raw schema and descriptor bytes; retain exact seven managed producer licence identities, mixed native evidence, all independent axes and historical receipts. Independent exact-head review remains required.",
+    "baselineCommit": "361fe13d6c2d2f87d7c1cb97e4b556ab3121fb58",
+    "reconciliation": false
+  },
+  "supersedes": "app-02-provenance-tools-r1"
+}

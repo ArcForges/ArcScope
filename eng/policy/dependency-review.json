@@ -37,7 +37,7 @@
     "src/ArcForges.ArcScope.Core/packages.lock.json": "a2466dd1c77271256629941936f01ad6b5213c7f2e2e05c3864bce16330cd464",
     "src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj": "62cc53a6092b232caae8fba18710a63f9b77e40a9d4484bd41f70620feaf8fb5",
     "src/ArcForges.ArcScope.Domain/packages.lock.json": "508d6e8c6a935331c98865841965a0f6a67786b1829af0f84d468582c99580b0",
-    "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj": "1518fa692a1a4d59ca79a6d67f9d46b219ad6a642133f1643728886cc47c4147",
+    "src/ArcForges.ArcScope/ArcForges.ArcScope.csproj": "1e1d06c3d9f5545e2b591509d0926ba1ff44e822d70237cdeb25890a05732ce3",
     "src/ArcForges.ArcScope/packages.lock.json": "198eb13ef2375ab882b81044fd91d45291b86a363008bac78913b23b5ffccc2c",
     "tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj": "f3990bca6788204155ee7b6bd092e9581f50d1bbb1363d0c80cb95fae14825a6",
     "tests/ArcForges.ArcScope.Tests/packages.lock.json": "1febf1de87bfca7c1a2ce2355d5bedc9ab81d025b422948b1bf48d22ecae297f",

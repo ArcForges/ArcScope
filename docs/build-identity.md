@@ -13,7 +13,7 @@ native dependencies do not invent a first-party C ABI version.
 Published Build.Policy 1.0.0-ci.100.1 stamps every owned assembly; owner targets add
 actual dirty state and reject source mismatches. The build identity contains the
 full commit, local/CI kind, run/attempt, pipeline URL and Git source timestamp.
-Contracts remains pinned to 1.0.0-ci.36.1, whose Hello contract major is 1.
+The historical foundation delivery pinned Contracts 1.0.0-ci.36.1 and its Hello major1. APP.02 now consumes actual PublicApi324.1: its complete canonical producer identity is cross-bound to source.json, all22 packaged authored schema files and the descriptor. Ten real namespace/JSON-title subjects retain their authored major1; package version324.1 remains on the separate package axis. Dirty, missing, foreign, conflicting, reordered or mismatched producer evidence is refused. This is offline build provenance, without a new runtime or deployment acceptance claim.
 
 The repository tool statically reads actual app/core/test/tool PE metadata once.
 Preparation writes `build-identity.json` from the reviewed Git/run/release, restored

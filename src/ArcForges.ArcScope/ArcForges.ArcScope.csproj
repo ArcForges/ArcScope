@@ -26,6 +26,30 @@
     <EmbeddedResource Include="../../eng/version-sources.json" LogicalName="ArcScope.VersionSources" />
     <EmbeddedResource Include="packages.lock.json" LogicalName="ArcScope.PackageLock" />
     <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/source.json" LogicalName="ArcScope.ContractsSource" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/build-identity.json" LogicalName="ArcScope.ContractsIdentity" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/contracts.binpb" LogicalName="ArcScope.ContractsDescriptor" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/http/v1/browser.schema.json" LogicalName="ArcScope.ContractsSchema.public/http/v1/browser.schema.json" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/http/v1/native-auth.schema.json" LogicalName="ArcScope.ContractsSchema.public/http/v1/native-auth.schema.json" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/http/v1/policy-body.schema.json" LogicalName="ArcScope.ContractsSchema.public/http/v1/policy-body.schema.json" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/http/v1/schema.json" LogicalName="ArcScope.ContractsSchema.public/http/v1/schema.json" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/http/v1/signed-formats.schema.json" LogicalName="ArcScope.ContractsSchema.public/http/v1/signed-formats.schema.json" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/catalog/v1/catalog.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/catalog/v1/catalog.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/foundation/v1/foundation.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/foundation/v1/foundation.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/hello/v1/hello.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/hello/v1/hello.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/application.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/application.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/chat.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/chat.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/commerce.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/commerce.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/connector.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/connector.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/content.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/content.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/descriptors.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/descriptors.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/export.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/export.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/identity.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/identity.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/inprocess-values.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/inprocess-values.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/scope.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/scope.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/support.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/support.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/sync.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/sync.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/publicapi/v1/transfer.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/publicapi/v1/transfer.proto" />
+    <EmbeddedResource Include="$(PkgArcForges_Contracts_PublicApi)/schemas/public/proto/arcforges/simulation/v1/simulation.proto" LogicalName="ArcScope.ContractsSchema.public/proto/arcforges/simulation/v1/simulation.proto" />
   </ItemGroup>
   <PropertyGroup>
     <LicenceBoundary>AGPL</LicenceBoundary>
