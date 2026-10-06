@@ -185,7 +185,7 @@ internal static class SecurityCodec
         writer.Write(lease.EndEventRecorded);
     });
 
-    internal static CapabilityLease DecodeLease(byte[] bytes) => Decode(bytes, reader =>
+    internal static CapabilityLease DecodeLease(byte[] bytes) => Decode<CapabilityLease>(bytes, reader =>
     {
         Header(reader, "ArcForges.ArcScope.Lease.v1");
         var id = new CapabilityLeaseId(GuidValue(reader));
@@ -246,7 +246,7 @@ internal static class SecurityCodec
         if (snapshot.CancelledBy is not null) Principal(writer, snapshot.CancelledBy);
     });
 
-    internal static ApprovalSnapshot DecodeApproval(byte[] bytes) => Decode(bytes, reader =>
+    internal static ApprovalSnapshot DecodeApproval(byte[] bytes) => Decode<ApprovalSnapshot>(bytes, reader =>
     {
         Header(reader, "ArcForges.ArcScope.Approval.v1");
         var id = GuidValue(reader);
