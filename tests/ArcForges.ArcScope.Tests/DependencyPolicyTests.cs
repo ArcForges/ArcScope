@@ -16,6 +16,17 @@ public sealed class DependencyPolicyTests
     }
 
     [Theory]
+    [InlineData("existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate")]
+    [InlineData("existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate; admitted Microsoft.Data.Sqlite10.0.12 SQLitePCLRaw.lib.e_sqlcipher 2.1.12 owner-store runtime closure")]
+    [InlineData("existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate; admitted Microsoft.Data.Sqlite10.0.12 SQLitePCLRaw.lib.e_sqlite3 2.1.13 owner-store runtime closure")]
+    public void MissingOrAdjacentOwnerStoreNativeDeclarationIsRefused(string declaration)
+    {
+        using var fixture = new Fixture();
+        fixture.Edit("eng/policy/dependency-policy.json", data => data["nativeAdmission"] = declaration);
+        Assert.Contains("Unreviewed native admission", Assert.Throws<InvalidOperationException>(fixture.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData("licence", "GPL-3.0-only", "Forbidden dependency licence")]
     [InlineData("version", "1.*", "Floating dependency version")]
     [InlineData("sourceCommit", "main", "Floating source tag")]
@@ -37,6 +48,37 @@ public sealed class DependencyPolicyTests
         using var unknownNative = new Fixture();
         unknownNative.Edit("eng/policy/dependency-policy.json", data => data["packages"]![0]!["id"] = "ArcForges.Native.Unreviewed");
         Assert.Contains("Forbidden dependency licence", Assert.Throws<InvalidOperationException>(unknownNative.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("ArcForges.Capabilities")]
+    [InlineData("ArcForges.Persistence.Sqlite")]
+    [InlineData("ArcForges.Security")]
+    [InlineData("ArcForges.Security.CapabilityEnforcement")]
+    [InlineData("ArcForges.Security.Audit")]
+    [InlineData("ArcForges.Contracts.LocalRpc.Platform")]
+    [InlineData("ArcForges.Sdk.Contracts")]
+    public void AdmittedManagedProducerCannotChangePublisher(string id)
+    {
+        using var fixture = new Fixture();
+        fixture.Edit("eng/policy/dependency-policy.json", data =>
+        {
+            var producer = Assert.Single(data["packages"]!.AsArray(), package => package!["id"]!.GetValue<string>() == id)!;
+            producer["sourceRepository"] = "https://github.com/untrusted/publisher";
+        });
+        Assert.Contains("Wrong publisher", Assert.Throws<InvalidOperationException>(fixture.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ManagedSecurityAdmissionDoesNotAdmitAdjacentUnreviewedPackage()
+    {
+        using var fixture = new Fixture();
+        fixture.Edit("eng/policy/dependency-policy.json", data =>
+        {
+            var producer = Assert.Single(data["packages"]!.AsArray(), package => package!["id"]!.GetValue<string>() == "ArcForges.Security")!;
+            producer["id"] = "ArcForges.Security.Unreviewed";
+        });
+        Assert.Contains("Forbidden dependency licence", Assert.Throws<InvalidOperationException>(fixture.Check).Message, StringComparison.Ordinal);
     }
 
     [Fact]

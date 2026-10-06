@@ -4,6 +4,13 @@
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="ArcForges.ArcScope.Tests" />
+    <PackageReference Include="ArcForges.Foundation" />
+    <PackageReference Include="ArcForges.Persistence.Sqlite" />
+    <PackageReference Include="ArcForges.Capabilities" />
+    <PackageReference Include="ArcForges.Security" />
+    <PackageReference Include="ArcForges.Security.CapabilityEnforcement" />
+    <PackageReference Include="ArcForges.Contracts.LocalRpc.Scope" />
+    <PackageReference Include="ArcForges.Sdk.Contracts" />
     <PackageReference Include="ArcForges.Contracts.PublicApi" />
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Grpc.Net.Client.Web" />

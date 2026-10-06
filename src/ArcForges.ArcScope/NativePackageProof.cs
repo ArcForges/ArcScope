@@ -26,12 +26,21 @@ internal static unsafe class NativePackageProof
             ["rid"] = RuntimeInformation.RuntimeIdentifier,
             ["nativeAot"] = !RuntimeFeature.IsDynamicCodeSupported,
             ["scope"] = "Published win-x64 Image ABI1.0 and Foundation primitives; no assistant, child-channel or functional ABI1.1 acceptance",
-            ["platformVersion"] = "1.0.0-ci.29.1",
-            ["contractsVersion"] = "1.0.0-ci.113.1",
             ["success"] = false
         };
         try
         {
+            // Managed service prerequisites may advance independently of the retained native ABI candidate.
+            using var packageLock = typeof(Program).Assembly.GetManifestResourceStream("ArcScope.PackageLock")
+                ?? throw new InvalidOperationException("The actual compiled package lock is missing.");
+            var dependencies = JsonNode.Parse(packageLock)!["dependencies"]!.AsObject();
+            string PackageVersion(string id) => dependencies
+                .Select(framework => framework.Value![id]?["resolved"]?.GetValue<string>())
+                .Where(version => version is not null).Distinct(StringComparer.Ordinal).Single()
+                ?? throw new InvalidOperationException("The actual package version is missing: " + id);
+            report["platformVersion"] = PackageVersion("ArcForges.Foundation");
+            report["nativeImageVersion"] = PackageVersion("ArcForges.Native.Image");
+            report["contractsVersion"] = PackageVersion("ArcForges.Contracts.LocalRpc.Scope");
             Require(!RuntimeFeature.IsDynamicCodeSupported, "Use the published Native AOT executable.");
             Require(OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64,
                 "The current immutable native producer supports win-x64 only.");
