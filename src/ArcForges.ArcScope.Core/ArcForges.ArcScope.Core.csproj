@@ -3,6 +3,7 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="ArcForges.ArcScope.Tests" />
     <PackageReference Include="ArcForges.Contracts.PublicApi" />
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Grpc.Net.Client.Web" />
