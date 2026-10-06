@@ -80,7 +80,7 @@ public sealed class ProductInvocationRecordStore : IInvocationRecordStore, IDisp
             {
                 var existing = byCommand.GetValueOrDefault(command);
                 if (existing is null) continue;
-                if (!SameFingerprint(existing.Fingerprint, fingerprint)) return Failure<InvocationRecordClaim>("validation.invalid_request");
+                if (!SameFingerprint(existing.Fingerprint, fingerprint)) return Failure<InvocationRecordClaim>("command.reused_identifier");
                 return await AwaitExistingAsync(existing, cancellationToken).ConfigureAwait(false);
             }
             try
@@ -119,7 +119,7 @@ public sealed class ProductInvocationRecordStore : IInvocationRecordStore, IDisp
         var encoded = EncodeOutcome(outcome);
         if (record.Outcome is not null)
         {
-            if (!record.Outcome.AsSpan().SequenceEqual(encoded)) return Failure<InvocationOutcome>("validation.invalid_request");
+            if (!record.Outcome.AsSpan().SequenceEqual(encoded)) return Failure<InvocationOutcome>("command.reused_identifier");
             var previous = DecodeOutcome(record.Outcome);
             reservation.Completion.TrySetResult(previous);
             return Outcome.Success(previous);
@@ -154,7 +154,7 @@ public sealed class ProductInvocationRecordStore : IInvocationRecordStore, IDisp
     private async ValueTask<Outcome<InvocationRecordClaim>> ReplayAsync(Guid command, Record record, byte[] fingerprint,
         CancellationToken cancellationToken)
     {
-        if (!SameFingerprint(record.Fingerprint, fingerprint)) return Failure<InvocationRecordClaim>("validation.invalid_request");
+        if (!SameFingerprint(record.Fingerprint, fingerprint)) return Failure<InvocationRecordClaim>("command.reused_identifier");
         if (record.Outcome is not null) return Outcome.Success(InvocationRecordClaim.ForReplay(DecodeOutcome(record.Outcome)));
         if (byCommand.TryGetValue(command, out var local) && local.Id == record.Reservation)
             return await AwaitExistingAsync(local, cancellationToken).ConfigureAwait(false);

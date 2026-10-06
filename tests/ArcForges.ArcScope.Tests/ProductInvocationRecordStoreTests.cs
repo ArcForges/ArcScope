@@ -77,6 +77,8 @@ public sealed class ProductInvocationRecordStoreTests
         Assert.False(duplicate.IsCompleted);
         var changed = await journal.BeginAsync(command, Fingerprint(1), Cancellation);
         Assert.Equal(OutcomeKind.Failure, changed.Kind);
+        Assert.True(changed.TryGetFailure(out var changedFailure));
+        Assert.Equal("command.reused_identifier", changedFailure!.ToWire().Code);
         var failure = InvocationOutcome.FailureResult(TypedFailure.Create("perm.resource_denied"));
         Assert.Equal(OutcomeKind.Failure, Value(await journal.CompleteAsync(claim, failure, Cancellation)).Kind);
         var replay = Value(await duplicate);

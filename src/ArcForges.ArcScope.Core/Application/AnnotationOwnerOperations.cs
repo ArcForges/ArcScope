@@ -74,7 +74,7 @@ internal sealed class AnnotationOwnerOperations(
         if (receipt is not null)
             return CryptographicOperations.FixedTimeEquals(receipt.Fingerprint, fingerprint)
                 ? Outcome.Success(MutationResponse(arguments.Meta!, receipt.CommittedVersion))
-                : Failure<ScopeOperationsServiceCreateAnnotationResponse>("validation.invalid_request");
+                : Failure<ScopeOperationsServiceCreateAnnotationResponse>("command.reused_identifier");
         if (invocation.ExpectedNative!.Value != (ulong)current.Version)
             return Failure<ScopeOperationsServiceCreateAnnotationResponse>("conflict.revision_mismatch");
         if (current.Metadata.Annotations.Any(annotation => UuidBoundary.FromWire(annotation.AnnotationId) == annotationId))
