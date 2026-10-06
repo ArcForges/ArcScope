@@ -130,7 +130,7 @@ internal sealed class AnnotationOwnerOperations(
 
     private ContentOrigin Origin(Guid annotation, string text, ActorChain actors)
     {
-        var delegated = actors.Actors.Any(actor => actor.Kind is ActorKind.Agent or ActorKind.Extension);
+        var delegated = actors.Actors.Count != 0;
         var origin = new ContentOrigin
         {
             Profile = "arcforges.content-origin.v1", OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
