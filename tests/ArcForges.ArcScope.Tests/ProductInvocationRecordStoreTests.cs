@@ -125,6 +125,25 @@ public sealed class ProductInvocationRecordStoreTests
     }
 
     [Fact]
+    public async Task MislabeledCommittedVersionCannotBecomeADurableSuccess()
+    {
+        using var database = new Database();
+        using var sqlite = database.Open();
+        using var journal = database.Journal(sqlite);
+        var claim = Value(await journal.BeginAsync(UuidBoundary.ToWire(Guid.NewGuid()), Fingerprint(), Cancellation));
+        var response = new ScopeOperationsServiceCreateAnnotationResponse
+        {
+            Value = new() { Revision = new() { Value = 2 } },
+            Meta = new() { CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()) },
+        };
+        var mismatched = Value(database.Binding.RestoreResult(AnnotationOperationCodec.Encode(response),
+            InvocationResultVersion.FromNativeContentRev(new() { Value = 1 })));
+        await Assert.ThrowsAsync<InvalidDataException>(async () =>
+            await journal.CompleteAsync(claim, InvocationOutcome.Success(mismatched), Cancellation));
+        Assert.Single(sqlite.ReadJournal(null, 100));
+    }
+
+    [Fact]
     public async Task InvalidFingerprintAndCancellationCannotReserve()
     {
         using var database = new Database();

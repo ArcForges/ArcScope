@@ -224,7 +224,7 @@ public sealed class ProductInvocationRecordStore : IInvocationRecordStore, IDisp
                 var number = reader.ReadUInt64();
                 var version = kind switch
                 {
-                    InvocationResultVersionKind.Revision => InvocationResultVersion.FromRevision(new Revision { Value = checked((long)number) }),
+                    InvocationResultVersionKind.Revision => InvocationResultVersion.FromRevision(new ArcForges.Contracts.Foundation.V1.Revision { Value = checked((long)number) }),
                     InvocationResultVersionKind.NativeContentRev => InvocationResultVersion.FromNativeContentRev(new NativeContentRev { Value = number }),
                     InvocationResultVersionKind.NonVersioned when number == 0 => InvocationResultVersion.NonVersioned(),
                     _ => throw new InvalidDataException("Invalid persisted owner-version union."),
