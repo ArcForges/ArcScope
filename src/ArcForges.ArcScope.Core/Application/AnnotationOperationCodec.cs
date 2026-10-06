@@ -78,7 +78,7 @@ internal static partial class AnnotationOperationCodec
         if (fields.TryGetValue("correlationId", out var correlation)) result.CorrelationId = IdValue(correlation);
         if (fields.TryGetValue("workspaceId", out var workspace)) result.WorkspaceId = IdValue(workspace);
         if (fields.TryGetValue("expectedNative", out var native)) result.ExpectedNative = new() { Value = PositiveUnsigned(native) };
-        if (fields.TryGetValue("expectedRev", out var cloud)) result.ExpectedRev = new() { Value = checked((long)PositiveUnsigned(cloud)) };
+        if (fields.TryGetValue("expectedRev", out var cloud)) result.ExpectedRev = new() { Value = PositiveSigned(cloud) };
         if (fields.TryGetValue("recoveryGeneration", out var recovery)) result.RecoveryGeneration = Unsigned(recovery);
         if (fields.TryGetValue("applicationScope", out var scope))
         {
@@ -106,7 +106,7 @@ internal static partial class AnnotationOperationCodec
         if (value.ExpectedRev is not null)
         {
             if (!value.ExpectedRev.HasValue || value.ExpectedRev.Value <= 0) throw new ArgumentException("An expected cloud revision must be explicitly positive.");
-            fields.Add(("expectedRev", Unsigned((ulong)value.ExpectedRev.Value)));
+            fields.Add(("expectedRev", CloudRevision(value.ExpectedRev)));
         }
         if (value.HasRecoveryGeneration) fields.Add(("recoveryGeneration", Unsigned(value.RecoveryGeneration)));
         if (value.ApplicationScope is not null)

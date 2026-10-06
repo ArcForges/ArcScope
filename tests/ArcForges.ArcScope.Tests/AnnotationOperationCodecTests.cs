@@ -63,6 +63,19 @@ public sealed class AnnotationOperationCodecTests
     }
 
     [Fact]
+    public void SignedCloudRevisionUsesItsAuthoredIntegerArmAndPreservesMaximum()
+    {
+        var request = Request();
+        request.Meta.ExpectedRev = new() { Value = long.MaxValue };
+        var encoded = AnnotationOperationCodec.Encode(request);
+        var field = Entry(Entry(encoded.Value, "meta").Value, "expectedRev");
+        Assert.Equal(StructuredValue.ValueOneofCase.Integer, field.Value.ValueCase);
+        Assert.Equal(long.MaxValue, AnnotationOperationCodec.DecodeCreateAnnotation(encoded).Meta.ExpectedRev.Value);
+        field.Value = new() { Text = long.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+        Assert.Throws<ArgumentException>(() => AnnotationOperationCodec.DecodeCreateAnnotation(encoded));
+    }
+
+    [Fact]
     public void AbsentMetadataScalarRemainsAbsent()
     {
         var request = Request();
