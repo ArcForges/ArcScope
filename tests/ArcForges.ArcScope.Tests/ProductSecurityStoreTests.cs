@@ -122,6 +122,20 @@ public sealed class ProductSecurityStoreTests
     }
 
     [Fact]
+    public async Task CorruptedStoredForeignDecisionCannotBeReadAsAnOwnerApproval()
+    {
+        using var database = new Database();
+        using var sqlite = database.Open();
+        var pending = database.Approval();
+        var raw = new DurableRegistry(sqlite, "arcscope.security.approvals.v1", database.Partition, database.Owner.Id, Clock.System);
+        Assert.True(await raw.TryCreateAsync(new(pending.ApprovalId, 1, SecurityCodec.EncodeApproval(pending)), Cancellation));
+        var foreign = new HumanPrincipal(database.Owner.Realm, new(Guid.NewGuid()), HumanIdentityKind.LocalHuman);
+        var corrupt = Resolve(pending, foreign, ApprovalDecisionKind.Approve);
+        Assert.True(await raw.TryReplaceAsync(new(pending.ApprovalId, 2, SecurityCodec.EncodeApproval(corrupt)), 1, Cancellation));
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await database.Approvals(sqlite).ReadAsync(pending.ApprovalId, Cancellation));
+    }
+
+    [Fact]
     public async Task CancellationAndOwnerMismatchCannotCreateSecurityRecords()
     {
         using var database = new Database();
