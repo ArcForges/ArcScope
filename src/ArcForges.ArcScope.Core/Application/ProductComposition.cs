@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+using ActorChain = ArcForges.Security.ActorChain;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Google.Protobuf;
@@ -126,7 +127,7 @@ public sealed class ProductComposition : IAsyncDisposable
         lock (lifecycle)
         {
             ObjectDisposedException.ThrowIf(closing, this);
-            var authority = new ProductAuthority(repository, instance, owner, scope, clock, actorSource);
+            var authority = new ProductAuthority(repository, instance, owner, scope, clock, actorSource, shutdown.Token);
             var security = new SecurityDecisionPipeline(new(clock, new RegistryCapabilityCatalogue(catalogue),
                 authority, authority, authority, authority, authority, authority, authority,
                 approvals, stepUp, authority, authority, actorBoundRecorder, audit, leases));
@@ -168,7 +169,7 @@ public sealed class ProductComposition : IAsyncDisposable
             ];
             journal ??= new(store, partition, owner.Id, clock, catalogue, bindings);
             var pipeline = new CapabilityInvocationPipeline(catalogue, availability, bindings, gate.AuthorizeAsync, journal, trace);
-            return new(this, authority, pipeline, contextProviders.Select(provider => (IContextProvider)new BoundedContextProvider(provider)).ToArray(), historyRequests, history);
+            return new(this, authority, pipeline, contextProviders.Select(provider => (IContextProvider)new BoundedContextProvider(provider, shutdown.Token)).ToArray(), historyRequests, history);
         }
     }
 
@@ -228,7 +229,7 @@ public sealed class ProductComposition : IAsyncDisposable
 
     // The trusted host may use asynchronous context adapters backed by unavailable external systems.
     // An uncooperative adapter cannot hold product shutdown forever or accumulate abandoned reads.
-    private sealed class BoundedContextProvider(IContextProvider source) : IContextProvider
+    private sealed class BoundedContextProvider(IContextProvider source, CancellationToken lifetime) : IContextProvider
     {
         private readonly object gate = new();
         private Task<IReadOnlyList<IMessage>>? pending;
@@ -243,7 +244,7 @@ public sealed class ProductComposition : IAsyncDisposable
             {
                 if (pending is null || pending.IsCompleted)
                 {
-                    pending = Task.Run(async () => await source.ProvideMessagesAsync(expectedOwner, CancellationToken.None).ConfigureAwait(false));
+                    pending = Task.Run(async () => await source.ProvideMessagesAsync(expectedOwner, lifetime).ConfigureAwait(false));
                     _ = pending.ContinueWith(static task => _ = task.Exception,
                         CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
                 }
@@ -293,10 +294,12 @@ public sealed class ProductComposition : IAsyncDisposable
             {
                 InvocationId = UuidBoundary.ToWire(options.InvocationId), CommandId = UuidBoundary.ToWire(options.CommandId),
                 Capability = key, Arguments = arguments, Context = options.Context,
-                ExpectedNative = metadata?.ExpectedNative?.Clone(), ExpectedRev = metadata?.ExpectedRev?.Clone(),
                 ApprovalId = options.ApprovalId is { } approval ? UuidBoundary.ToWire(approval) : null,
                 LeaseId = options.LeaseId is { } lease ? UuidBoundary.ToWire(lease) : null,
             };
+            // The published precondition is a protobuf oneof: assigning the other null arm clears the native arm.
+            if (metadata?.ExpectedNative is { } native) invocation.ExpectedNative = native.Clone();
+            else if (metadata?.ExpectedRev is { } revision) invocation.ExpectedRev = revision.Clone();
             var registration = host.catalogue.Find(key)!;
             var target = new CapabilityTarget(host.instance, registration.Descriptor, InstanceHealth.Ready, true);
             // This instance is actual in-process composition; RunAsync admits work only while it is running.
@@ -320,9 +323,6 @@ public sealed class ProductComposition : IAsyncDisposable
             var copy = configuration.Clone();
             return host.RunAsync(async token =>
             {
-                var current = await authority.CurrentAsync(token).ConfigureAwait(false);
-                if (current is null || current.Origin != DecisionOrigin.Local || current.Actors.Actors.Count != 0 ||
-                    current.Trust != TrustVerdict.Verified || current.Actors.Owner.Kind != HumanIdentityKind.LocalHuman) return Failure<ScopeSession>("perm.capability_denied");
                 if (sessionId == Guid.Empty || string.IsNullOrWhiteSpace(name)) return Failure<ScopeSession>("validation.invalid_request");
                 var session = new ScopeSession { SessionId = UuidBoundary.ToWire(sessionId), Name = name, Configuration = copy, Revision = new() { Value = 1 } };
                 var shape = new ScopeOperationsServiceGetSessionResponse
@@ -331,6 +331,10 @@ public sealed class ProductComposition : IAsyncDisposable
                     Value = new() { Session = session },
                 };
                 if (!ContractShapeValidation.IsValid(shape)) return Failure<ScopeSession>("validation.invalid_request");
+                // A generated-valid document must also remain readable through the actual bounded gateway.
+                try { _ = AnnotationOperationCodec.Encode(shape); }
+                catch (ArgumentException) { return Failure<ScopeSession>("validation.invalid_request"); }
+                if (!await authority.CanBootstrapAsync(token).ConfigureAwait(false)) return Failure<ScopeSession>("perm.capability_denied");
                 var metadata = new ScopeMetadata { SessionId = session.SessionId.Clone(), Name = name, Configuration = copy };
                 if (!await host.repository.TryCreateAsync(sessionId, metadata, token).ConfigureAwait(false))
                     return Failure<ScopeSession>("conflict.duplicate_identifier");

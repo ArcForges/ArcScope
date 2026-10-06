@@ -4,8 +4,10 @@ using ArcForges.ArcScope.Core.Infrastructure;
 using ArcForges.Capabilities;
 using ArcForges.Contracts.Foundation.Values;
 using ArcForges.Contracts.LocalRpc.Scope.V1;
+using ArcForges.Contracts.LocalRpc.Scope.Shapes;
 using ArcForges.Contracts.PublicApi.V1;
 using ArcForges.Foundation;
+using ArcForges.Foundation.Execution;
 using ArcForges.Foundation.Errors;
 using ArcForges.Persistence.Sqlite;
 using ArcForges.Sdk.Contracts.V1;
@@ -143,6 +145,71 @@ public sealed class ProductCompositionTests
         Assert.Null(fixture.Repository.Read(id));
     }
 
+    [Theory]
+    [InlineData("disabled")]
+    [InlineData("missing")]
+    [InlineData("denied")]
+    [InlineData("expired")]
+    [InlineData("future")]
+    [InlineData("wrong-device")]
+    [InlineData("unknown-constraint")]
+    [InlineData("duplicate")]
+    public async Task BootstrapRequiresCurrentEnabledUnambiguousOwnerWriteGrant(string refusal)
+    {
+        using var fixture = new Fixture(); await using var host = fixture.Host(); var endpoint = fixture.Bind(host);
+        var current = (await fixture.Session.ReadCurrentAsync(Cancellation))!;
+        const string capability = "IScopeOperations.CreateAnnotation";
+        var original = Assert.Single(current.Permissions, grant => grant.CapabilityKey == capability);
+        var constraints = refusal switch
+        {
+            "wrong-device" => new[] { PermissionConstraints.DeviceBound(new DeviceId(Guid.NewGuid())) },
+            "unknown-constraint" => ["unknown:constraint"],
+            _ => Array.Empty<string>(),
+        };
+        var grant = new PermissionGrantRecord(original.IssuerKey, original.PrincipalKey, capability, original.ScopeKey,
+            refusal == "denied" ? PermissionGrantState.ExplicitlyDenied : PermissionGrantState.Granted, constraints,
+            refusal == "future" ? DateTimeOffset.UtcNow.AddMinutes(1) : DateTimeOffset.UtcNow.AddMinutes(-5),
+            refusal == "expired" ? DateTimeOffset.UtcNow.AddMinutes(-1) : DateTimeOffset.UtcNow.AddMinutes(10), "2");
+        var permissions = refusal == "missing" ? Array.Empty<PermissionGrantRecord>() :
+            refusal == "duplicate" ? [grant, grant] : new[] { grant };
+        fixture.Session.Refresh(new(current.Actors, current.Scope, current.Origin, current.Transport, 2,
+            current.ValidFrom, current.ExpiresAt, current.Trust, permissions,
+            refusal == "disabled" ? [] : current.EnabledCapabilities));
+        var id = Guid.NewGuid();
+        Assert.Equal(OutcomeKind.Failure, (await endpoint.BootstrapAsync(id, "denied", Configuration(), Cancellation)).Kind);
+        Assert.Null(fixture.Repository.Read(id));
+    }
+
+    [Fact]
+    public async Task GeneratedValidBootstrapMustFitTheActualReadableGatewayBeforeOwnerCommit()
+    {
+        using var fixture = new Fixture(); await using var host = fixture.Host(); var endpoint = fixture.Bind(host);
+        var id = Guid.NewGuid(); var configuration = Configuration();
+        for (var index = 1; index <= 200; index++)
+        {
+            var channel = configuration.Channels[0].Clone(); channel.ChannelId = UuidBoundary.ToWire(Guid.NewGuid());
+            configuration.Channels.Add(channel);
+        }
+        var response = new ScopeOperationsServiceGetSessionResponse
+        {
+            Meta = new() { CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()), RecoveryGeneration = 1 },
+            Value = new() { Session = new() { SessionId = UuidBoundary.ToWire(id), Name = "Replay", Configuration = configuration, Revision = new() { Value = 1 } } },
+        };
+        Assert.True(ContractShapeValidation.IsValid(response));
+        Assert.Equal(OutcomeKind.Failure, (await endpoint.BootstrapAsync(id, "Replay", configuration, Cancellation)).Kind);
+        Assert.Null(fixture.Repository.Read(id));
+        var valid = Guid.NewGuid(); var normal = Configuration(); Value(await endpoint.BootstrapAsync(valid, "Replay", normal, Cancellation));
+        var read = await endpoint.GetSessionAsync(Read(valid, 1), Options(), Cancellation);
+        Assert.True(read.TryGetValue(out var actual), string.Join("; ", fixture.Audit.Query(new(DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddMinutes(5), 100))
+            .Select(item => item.Event.DecisionDetail switch
+            {
+                AuditSecurityDecisionDetail detail => $"{detail.Record.Kind}/{detail.Record.Point}/{detail.Record.FailedStep}/{detail.Record.ReasonCode}/{detail.Record.RegisteredCode}",
+                AuditDecisionResultDetail detail => $"result:{detail.Record.Result}/{detail.Record.FailureCode}",
+                _ => item.Event.EventType.ToString(),
+            })));
+        Assert.Equal(normal, actual!.Value.Session.Configuration);
+    }
+
     [Fact]
     public async Task ShutdownCancelsPendingContextAndNeverDisposesBorrowedOwnerStore()
     {
@@ -154,6 +221,7 @@ public sealed class ProductCompositionTests
         var first = host.DisposeAsync().AsTask(); var second = host.DisposeAsync().AsTask();
         await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(10), Cancellation);
         Assert.NotEqual(OutcomeKind.Success, (await pending).Kind);
+        Assert.True(provider.HostLifetime.IsCancellationRequested);
         Assert.NotNull(fixture.Repository.Read(session));
         Assert.Equal(OutcomeKind.Failure, (await endpoint.GetSessionAsync(Read(session, 1), Options(), Cancellation)).Kind);
         provider.Release.TrySetResult([]); // The unavailable external callback is owned by the fake and explicitly released.
@@ -253,7 +321,8 @@ public sealed class ProductCompositionTests
         public InstanceIdentity Owner => owner;
         internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal TaskCompletionSource<IReadOnlyList<IMessage>> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal CancellationToken HostLifetime { get; private set; }
         public ValueTask<IReadOnlyList<IMessage>> ProvideMessagesAsync(InstanceIdentity expectedOwner, CancellationToken token = default)
-        { Entered.TrySetResult(); return new(Release.Task); }
+        { HostLifetime = token; Entered.TrySetResult(); return new(Release.Task); }
     }
 }

@@ -123,7 +123,7 @@ public sealed class ProductHostActorSession : IProductHostActorSource, IDisposab
 // reloads the host source. Resource revision is fresh and distinct from the original command precondition,
 // allowing an already committed command to replay only after renewed service authorization.
 internal sealed class ProductAuthority(AnnotationSessionRepository repository, InstanceIdentity instance,
-    HumanPrincipal owner, DecisionScope scope, IClock clock, IProductHostActorSource actors)
+    HumanPrincipal owner, DecisionScope scope, IClock clock, IProductHostActorSource actors, CancellationToken lifetime = default)
     : ICapabilityEvidenceSource, IProductPolicy, IActorIdentityVerifier, IScopeAuthority, ITrustEvaluator,
       IPermissionSource, IResourceAuthorizer, IOwnerValidator, IDataBoundaryAuthorizer,
       ISensitiveOperationSource, ILeaseCeilingSource
@@ -144,7 +144,7 @@ internal sealed class ProductAuthority(AnnotationSessionRepository repository, I
             // Caller cancellation only stops this waiter, never another invocation's current-authority read.
             if (actorRead is null || actorRead.IsCompleted)
             {
-                actorRead = Task.Run(async () => await actors.ReadCurrentAsync(CancellationToken.None).ConfigureAwait(false));
+                actorRead = Task.Run(async () => await actors.ReadCurrentAsync(lifetime).ConfigureAwait(false));
                 _ = actorRead.ContinueWith(static task => _ = task.Exception,
                     CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
             }
@@ -166,6 +166,25 @@ internal sealed class ProductAuthority(AnnotationSessionRepository repository, I
 
     private static bool SameActors(ActorChain left, ActorChain right) =>
         CryptographicOperations.FixedTimeEquals(ActorChainSnapshot.Encode(left), ActorChainSnapshot.Encode(right));
+
+    internal async ValueTask<bool> CanBootstrapAsync(CancellationToken token)
+    {
+        const string capability = "IScopeOperations.CreateAnnotation";
+        var current = await CurrentAsync(token).ConfigureAwait(false);
+        if (current is null || current.Origin != DecisionOrigin.Local || current.Actors.Actors.Count != 0 ||
+            current.Trust != TrustVerdict.Verified || current.Actors.Owner.Kind != HumanIdentityKind.LocalHuman ||
+            !ReferenceEquals(current.Transport, TransportSessions.InProcess) ||
+            !current.EnabledCapabilities.Contains(capability, StringComparer.Ordinal)) return false;
+        var principal = FormattableString.Invariant($"principal:{owner.Realm.Value:N}/{owner.Id.Value:N}");
+        var grant = FindGrant(current, principal, capability, scope.Key);
+        var now = clock.GetCurrentInstant();
+        return grant is { State: PermissionGrantState.Granted } &&
+            Instant.FromDateTimeOffset(grant.ValidFromUtc) <= now && now < Instant.FromDateTimeOffset(grant.ValidUntilUtc) &&
+            grant.Constraints.All(constraint => constraint == PermissionConstraints.LocalOriginOnly ||
+                constraint == PermissionConstraints.DeviceBound(current.Actors.Device)) &&
+            current.Generation == actors.Generation;
+    }
+
     private async ValueTask<ProductHostActorSnapshot?> ForRequestAsync(DecisionRequest request, CancellationToken token)
     {
         var current = await CurrentAsync(token).ConfigureAwait(false);
