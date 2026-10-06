@@ -48,6 +48,7 @@ public sealed class ProductCompositionTests
             Assert.Equal("真实注释", Assert.Single(projection.Annotations).Text);
             Assert.Equal(OutcomeKind.Failure, (await endpoint.GetAnnotationHistoryAsync(session, 1, Options(), Cancellation)).Kind);
         }
+        fixture.ReopenOwnerStore();
         await using (var reopened = fixture.Host())
         {
             var endpoint = fixture.Bind(reopened);
@@ -79,6 +80,41 @@ public sealed class ProductCompositionTests
     }
 
     [Fact]
+    public async Task SharedAssistantUsesItsOwnActorAndRealRevocableLeaseWithoutHumanBootstrapFallback()
+    {
+        using var fixture = new Fixture(); await using var host = fixture.Host();
+        var human = fixture.Bind(host); var sessionId = Guid.NewGuid();
+        Value(await human.BootstrapAsync(sessionId, "Replay", Configuration(), Cancellation));
+        var current = (await fixture.Session.ReadCurrentAsync(Cancellation))!;
+        var actor = new DelegatedActor(ActorKind.Agent, Guid.NewGuid(), new InstanceId(Guid.NewGuid()), "arcscope.assistant/1");
+        var chain = new ActorChain(current.Actors.Owner, current.Actors.Device, current.Actors.Installation,
+            current.Actors.Session, current.Actors.CallerInstance, [actor]);
+        using var agentSession = new ProductHostActorSession(new(chain, current.Scope, current.Origin, current.Transport,
+            1, current.ValidFrom, current.ExpiresAt, current.Trust, current.Permissions, current.EnabledCapabilities));
+        var agent = fixture.Bind(host, actorSource: agentSession);
+        Assert.Equal(OutcomeKind.Failure, (await agent.BootstrapAsync(Guid.NewGuid(), "agent must not create", Configuration(), Cancellation)).Kind);
+        var missing = Options();
+        Assert.Equal(OutcomeKind.Failure, (await agent.CreateAnnotationAsync(Append(sessionId, missing, 1, "without lease"), missing, Cancellation)).Kind);
+        var issued = await fixture.Leases.IssueAsync(new(current.Actors, fixture.Scope, new TaskId(Guid.NewGuid()),
+            new(ActorKind.Agent, actor.ActorId), "IScopeOperations.CreateAnnotation", ["session:" + sessionId.ToString("D")],
+            RiskLevel.R1, DecisionOrigin.Local, LeaseIssueBasis.PolicyAllowed, TimeSpan.FromMinutes(1)), Cancellation);
+        Assert.True(issued.Issued, issued.RegisteredCode);
+        var lease = issued.Lease!;
+        var options = new ProductInvocationOptions(Guid.NewGuid(), Guid.NewGuid(),
+            new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" }, leaseId: lease.Id.Value);
+        var request = Append(sessionId, options, 1, "assistant draft");
+        Assert.Equal(2UL, Value(await agent.CreateAnnotationAsync(request, options, Cancellation)).Value.Revision.Value);
+        Assert.Equal("unknown", Assert.Single(Assert.Single(fixture.Repository.Read(sessionId)!.Metadata.Annotations).Origin.Kinds));
+        Value(await fixture.Leases.RevokeAsync(lease.Id, fixture.Owner, LeaseRevocationReason.OwnerRevoked, Cancellation));
+        Assert.Equal(OutcomeKind.Failure, (await agent.CreateAnnotationAsync(request, options, Cancellation)).Kind);
+        var records = fixture.Audit.Query(new(DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddMinutes(5), 100));
+        Assert.Contains(records, item => item.Event.EventType == AuditEventType.InvocationResult &&
+            item.Event.ActorChain.Actors.Count == 1 && item.Event.ActorChain.Actors[0].ActorId == actor.ActorId &&
+            item.Event.SoftwareIdentity.Value == actor.SoftwareIdentity);
+        Assert.Single(fixture.Repository.Read(sessionId)!.Metadata.Annotations);
+    }
+
+    [Fact]
     public async Task CompetingCommandsCannotBothAppendTheSameOwnerVersion()
     {
         using var fixture = new Fixture();
@@ -101,7 +137,9 @@ public sealed class ProductCompositionTests
         Assert.Equal(OutcomeKind.Failure, (await endpoint.BootstrapAsync(invalid, "bad", new(), Cancellation)).Kind);
         Assert.Null(fixture.Repository.Read(invalid));
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel(); var id = Guid.NewGuid();
-        Assert.Equal(OutcomeKind.Cancelled, (await endpoint.BootstrapAsync(id, "cancelled", Configuration(), cancelled.Token)).Kind);
+        var cancellation = await endpoint.BootstrapAsync(id, "cancelled", Configuration(), cancelled.Token);
+        Assert.Equal(OutcomeKind.Cancelled, cancellation.Kind);
+        Assert.Equal(ArcForges.Contracts.Foundation.V1.EffectCertainty.DidNotHappen, cancellation.CancellationEffect);
         Assert.Null(fixture.Repository.Read(id));
     }
 
@@ -144,20 +182,21 @@ public sealed class ProductCompositionTests
     {
         private readonly string directory = Path.Combine(Path.GetTempPath(), "app02-product-" + Guid.NewGuid().ToString("N"));
         private readonly Guid partition = Guid.NewGuid();
-        private readonly SqliteStore store;
-        private readonly CapabilityLeaseManager leases;
-        private readonly ApprovalCoordinator approvals;
+        private readonly Guid storeId = Guid.NewGuid();
+        private SqliteStore store;
+        private CapabilityLeaseManager leases;
+        private ApprovalCoordinator approvals;
         private readonly StepUpCoordinator stepUp;
         internal HumanPrincipal Owner { get; } = new(new RealmId(Guid.NewGuid()), new UserId(Guid.NewGuid()), HumanIdentityKind.LocalHuman);
         internal InstanceIdentity Instance { get; } = new(new InstallationIdentity(AppIdentity.ArcScope, new DeviceId(Guid.NewGuid()), new InstallationId(Guid.NewGuid())), new InstanceId(Guid.NewGuid()), 1);
         internal DecisionScope Scope { get; }
         internal ProductHostActorSession Session { get; }
-        internal AnnotationSessionRepository Repository { get; }
+        internal AnnotationSessionRepository Repository { get; private set; }
         internal AuditStore Audit { get; }
         internal Fixture()
         {
             Directory.CreateDirectory(directory); Scope = new(Owner.Realm, null);
-            store = new(Path.Combine(directory, "owner.db"), Guid.NewGuid(), new HostWriteAuthorization());
+            store = new(Path.Combine(directory, "owner.db"), storeId, new HostWriteAuthorization());
             Repository = new(store, partition, Owner.Id, Clock.System);
             Audit = new(Path.Combine(directory, "audit.db"), Owner.Realm, Owner.Id, new(Guid.NewGuid(), 30));
             var chain = new ActorChain(Owner, Instance.Installation.DeviceId, Instance.Installation.InstallationId,
@@ -174,11 +213,24 @@ public sealed class ProductCompositionTests
             approvals = new(Clock.System, new ProductApprovalStore(store, partition, Owner, Clock.System));
             stepUp = new(Clock.System, new NoSensitiveAuthentication(), new NoLocalPresence());
         }
+        internal void ReopenOwnerStore()
+        {
+            store.Dispose();
+            store = new(Path.Combine(directory, "owner.db"), storeId, new HostWriteAuthorization());
+            Repository = new(store, partition, Owner.Id, Clock.System);
+            var authority = new ProductAuthority(Repository, Instance, Owner, Scope, Clock.System, Session);
+            leases = new(Clock.System, new ProductLeaseStore(store, partition, Owner, Clock.System),
+                new CapabilityLeaseEventAuditSink(new CapabilityLeaseAuditAdapter(Audit), new("arcscope.desktop/1")), authority);
+            approvals = new(Clock.System, new ProductApprovalStore(store, partition, Owner, Clock.System));
+        }
+        internal CapabilityLeaseManager Leases => leases;
         internal ProductComposition Host() => new(store, partition, Instance, Owner, Scope, Clock.System, 1,
             approvals, stepUp, leases, new SecurityDecisionAuditSink(Audit, new("arcscope.desktop/1")), new LocalTrace());
-        internal ProductComposition.ProductEndpoint Bind(ProductComposition host, IReadOnlyList<IContextProvider>? context = null) =>
-            host.BindHostSession(Session, new UiAvailability(), context ?? [],
-                (actors, scope, origin) => new DecisionResultRecorder(Audit, actors, new("arcscope.desktop/1"), scope, origin));
+        internal ProductComposition.ProductEndpoint Bind(ProductComposition host, IReadOnlyList<IContextProvider>? context = null,
+            IProductHostActorSource? actorSource = null) =>
+            host.BindHostSession(actorSource ?? Session, new UiAvailability(), context ?? [],
+                (actors, scope, origin) => new DecisionResultRecorder(Audit, actors,
+                    new(actors.Actors.Count == 0 ? "arcscope.desktop/1" : actors.Actors[^1].SoftwareIdentity), scope, origin));
         public void Dispose() { Session.Dispose(); Audit.Dispose(); store.Dispose(); Directory.Delete(directory, recursive: true); }
     }
     // Actual UI/OS identity, availability and presence are unavailable in this ordinary component test.

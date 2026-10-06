@@ -183,6 +183,8 @@ public sealed class ProductComposition : IAsyncDisposable
     [SuppressMessage("Usage", "CA1031:Do not catch general exception types", Justification = "The public product boundary maps unavailable owner/storage/host exceptions to closed failure without exposing exception text.")]
     private Task<Outcome<T>> RunAsync<T>(Func<CancellationToken, Task<Outcome<T>>> operation, CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromResult(Outcome.Cancelled<T>(EffectCertainty.DidNotHappen));
         // No unbounded queue and no SQLite work on the UI thread, including synchronous reads before the first await.
         lock (lifecycle)
         {
