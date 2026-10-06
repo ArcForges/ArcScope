@@ -62,6 +62,7 @@
     "src/ArcForges.ArcScope.Core/Application/AnnotationResponseCodec.cs",
     "src/ArcForges.ArcScope.Core/Application/ProductAuthority.cs",
     "src/ArcForges.ArcScope.Core/Application/ProductComposition.cs",
+    "src/ArcForges.ArcScope.Core/Application/README.md",
     "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj",
     "src/ArcForges.ArcScope.Core/CloudHelloClient.cs",
     "src/ArcForges.ArcScope.Core/HelloViewModel.cs",
