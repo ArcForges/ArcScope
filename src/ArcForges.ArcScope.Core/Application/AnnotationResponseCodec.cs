@@ -14,6 +14,14 @@ internal static partial class AnnotationOperationCodec
 
     internal static CapabilityResult Encode(ScopeOperationsServiceGetSessionResponse response)
     {
+        var result = BuildResult(response);
+        if (!DecodeGetSessionResponse(result).Equals(response))
+            throw new ArgumentException("The response contains fields outside the closed operation profile.", nameof(response));
+        return result;
+    }
+
+    private static CapabilityResult BuildResult(ScopeOperationsServiceGetSessionResponse response)
+    {
         ArgumentNullException.ThrowIfNull(response);
         if (response.OutcomeCase != ScopeOperationsServiceGetSessionResponse.OutcomeOneofCase.Value || response.Value.Session is null)
             throw new ArgumentException("Only the exact typed owner's successful session response is encoded.");
@@ -22,9 +30,7 @@ internal static partial class AnnotationOperationCodec
             ("value", Record([("session", EncodeScopeSession(response.Value.Session))])),
         };
         if (response.Meta is not null) fields.Add(("meta", EncodeResponseMeta(response.Meta)));
-        var result = new CapabilityResult { SchemaId = GetSessionResponseSchema, Value = Record(fields) };
-        _ = DecodeGetSessionResponse(result);
-        return result;
+        return new() { SchemaId = GetSessionResponseSchema, Value = Record(fields) };
     }
 
     internal static ScopeOperationsServiceGetSessionResponse DecodeGetSessionResponse(CapabilityResult result)
@@ -41,10 +47,20 @@ internal static partial class AnnotationOperationCodec
             Meta = fields.TryGetValue("meta", out var metadata) ? DecodeResponseMeta(metadata) : null,
         };
         if (!ContractShapeValidation.IsValid(response)) throw new ArgumentException("The owned session response violates the published shape contract.");
+        if (!BuildResult(response).Equals(result))
+            throw new ArgumentException("The result contains fields outside the closed operation profile.", nameof(result));
         return response;
     }
 
     internal static CapabilityResult Encode(ScopeOperationsServiceCreateAnnotationResponse response)
+    {
+        var result = BuildResult(response);
+        if (!DecodeCreateAnnotationResponse(result).Equals(response))
+            throw new ArgumentException("The response contains fields outside the closed operation profile.", nameof(response));
+        return result;
+    }
+
+    private static CapabilityResult BuildResult(ScopeOperationsServiceCreateAnnotationResponse response)
     {
         ArgumentNullException.ThrowIfNull(response);
         if (response.OutcomeCase != ScopeOperationsServiceCreateAnnotationResponse.OutcomeOneofCase.Value || response.Value.Revision is null)
@@ -54,9 +70,7 @@ internal static partial class AnnotationOperationCodec
             ("value", Record([("revision", Native(response.Value.Revision))])),
         };
         if (response.Meta is not null) fields.Add(("meta", EncodeResponseMeta(response.Meta)));
-        var result = new CapabilityResult { SchemaId = CreateAnnotationResponseSchema, Value = Record(fields) };
-        _ = DecodeCreateAnnotationResponse(result);
-        return result;
+        return new() { SchemaId = CreateAnnotationResponseSchema, Value = Record(fields) };
     }
 
     internal static ScopeOperationsServiceCreateAnnotationResponse DecodeCreateAnnotationResponse(CapabilityResult result)
@@ -70,6 +84,8 @@ internal static partial class AnnotationOperationCodec
             Meta = fields.TryGetValue("meta", out var metadata) ? DecodeResponseMeta(metadata) : null,
         };
         if (!ContractShapeValidation.IsValid(response)) throw new ArgumentException("The annotation result violates the published shape contract.");
+        if (!BuildResult(response).Equals(result))
+            throw new ArgumentException("The result contains fields outside the closed operation profile.", nameof(result));
         return response;
     }
 

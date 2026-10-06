@@ -11,6 +11,39 @@ namespace ArcForges.ArcScope.Tests;
 
 public sealed class AnnotationResponseCodecTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnknownWireFieldsInTheCapabilityEnvelopeOrConfigurationAreRefused(bool nestedConfiguration)
+    {
+        var result = AnnotationOperationCodec.Encode(CompleteResponse());
+        byte[] unknown = [0xa0, 0x06, 0x01];
+        if (nestedConfiguration)
+        {
+            var session = Field(Field(result.Value, "value"), "session");
+            var configuration = session.Record.Entries.Single(entry => entry.Name == "configuration");
+            configuration.Value = StructuredValue.Parser.ParseFrom(configuration.Value.ToByteArray().Concat(unknown).ToArray());
+        }
+        else
+            result = CapabilityResult.Parser.ParseFrom(result.ToByteArray().Concat(unknown).ToArray());
+        Assert.Throws<ArgumentException>(() => AnnotationOperationCodec.DecodeGetSessionResponse(result));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnknownWireFieldsCannotBeSilentlyRemovedFromACompleteOwnerResponse(bool nestedConfiguration)
+    {
+        var response = CompleteResponse();
+        byte[] unknown = [0xa0, 0x06, 0x01];
+        if (nestedConfiguration)
+            response.Value.Session.Configuration = ScopeConfiguration.Parser.ParseFrom(
+                response.Value.Session.Configuration.ToByteArray().Concat(unknown).ToArray());
+        else
+            response = ScopeOperationsServiceGetSessionResponse.Parser.ParseFrom(response.ToByteArray().Concat(unknown).ToArray());
+        Assert.Throws<ArgumentException>(() => AnnotationOperationCodec.Encode(response));
+    }
+
     [Fact]
     public void CompleteSessionConfigurationCapturesAndExplicitDefaultsRoundTrip()
     {

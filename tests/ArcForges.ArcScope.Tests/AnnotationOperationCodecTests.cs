@@ -1,14 +1,48 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 using ArcForges.ArcScope.Core.Application;
 using ArcForges.Contracts.Foundation.Values;
+using ArcForges.Contracts.Foundation.V1;
 using ArcForges.Contracts.LocalRpc.Scope.V1;
 using ArcForges.Contracts.PublicApi.V1;
+using Google.Protobuf;
 using Xunit;
 
 namespace ArcForges.ArcScope.Tests;
 
 public sealed class AnnotationOperationCodecTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnknownWireFieldsInTheCapabilityEnvelopeOrMetadataAreRefused(bool nestedMetadata)
+    {
+        var arguments = AnnotationOperationCodec.Encode(Request());
+        byte[] unknown = [0xa0, 0x06, 0x01];
+        if (nestedMetadata)
+        {
+            var metadata = Entry(arguments.Value, "meta");
+            metadata.Value = StructuredValue.Parser.ParseFrom(metadata.Value.ToByteArray().Concat(unknown).ToArray());
+        }
+        else
+            arguments = CapabilityArguments.Parser.ParseFrom(arguments.ToByteArray().Concat(unknown).ToArray());
+        Assert.Throws<ArgumentException>(() => AnnotationOperationCodec.DecodeCreateAnnotation(arguments));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnknownWireFieldsCannotBeSilentlyRemovedFromAnOperation(bool nestedMetadata)
+    {
+        var request = Request();
+        // Field 100 is outside the published request and RequestMeta schemas.
+        byte[] unknown = [0xa0, 0x06, 0x01];
+        if (nestedMetadata)
+            request.Meta = RequestMeta.Parser.ParseFrom(request.Meta.ToByteArray().Concat(unknown).ToArray());
+        else
+            request = ScopeOperationsServiceCreateAnnotationRequest.Parser.ParseFrom(request.ToByteArray().Concat(unknown).ToArray());
+        Assert.Throws<ArgumentException>(() => AnnotationOperationCodec.Encode(request));
+    }
+
     [Fact]
     public void UnsignedMaximumAndExplicitZeroRoundTripWithoutFloatingPoint()
     {

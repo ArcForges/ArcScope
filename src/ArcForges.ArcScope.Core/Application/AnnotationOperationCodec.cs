@@ -19,11 +19,14 @@ internal static partial class AnnotationOperationCodec
     {
         RequireSchema(arguments, GetSessionSchema);
         var fields = Record(arguments.Value, "meta", "sessionId");
-        return new()
+        var request = new ScopeOperationsServiceGetSessionRequest
         {
             SessionId = IdValue(Required(fields, "sessionId")),
             Meta = fields.TryGetValue("meta", out var metadata) ? RequestMetadata(metadata) : null,
         };
+        if (!BuildArguments(request).Equals(arguments))
+            throw new ArgumentException("The arguments contain fields outside the closed operation profile.", nameof(arguments));
+        return request;
     }
 
     internal static ScopeOperationsServiceCreateAnnotationRequest DecodeCreateAnnotation(CapabilityArguments arguments)
@@ -34,7 +37,7 @@ internal static partial class AnnotationOperationCodec
         var first = Unsigned(Required(range, "from"));
         var count = Unsigned(Required(range, "count"));
         if (ulong.MaxValue - first < count) throw new ArgumentException("The half-open sample range overflows.");
-        return new()
+        var request = new ScopeOperationsServiceCreateAnnotationRequest
         {
             AnnotationId = IdValue(Required(fields, "annotationId")),
             SessionId = IdValue(Required(fields, "sessionId")),
@@ -42,9 +45,20 @@ internal static partial class AnnotationOperationCodec
             Text = Text(Required(fields, "text"), 4096, allowEmpty: false),
             Meta = fields.TryGetValue("meta", out var metadata) ? RequestMetadata(metadata) : null,
         };
+        if (!BuildArguments(request).Equals(arguments))
+            throw new ArgumentException("The arguments contain fields outside the closed operation profile.", nameof(arguments));
+        return request;
     }
 
     internal static CapabilityArguments Encode(ScopeOperationsServiceGetSessionRequest request)
+    {
+        var result = BuildArguments(request);
+        if (!DecodeGetSession(result).Equals(request))
+            throw new ArgumentException("The request contains fields outside the closed operation profile.", nameof(request));
+        return result;
+    }
+
+    private static CapabilityArguments BuildArguments(ScopeOperationsServiceGetSessionRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         var fields = new List<(string Key, StructuredValue Value)> { ("sessionId", IdValue(request.SessionId)) };
@@ -53,6 +67,14 @@ internal static partial class AnnotationOperationCodec
     }
 
     internal static CapabilityArguments Encode(ScopeOperationsServiceCreateAnnotationRequest request)
+    {
+        var result = BuildArguments(request);
+        if (!DecodeCreateAnnotation(result).Equals(request))
+            throw new ArgumentException("The request contains fields outside the closed operation profile.", nameof(request));
+        return result;
+    }
+
+    private static CapabilityArguments BuildArguments(ScopeOperationsServiceCreateAnnotationRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (request.Range is not { HasFrom: true, HasCount: true } || !request.HasText)
@@ -65,9 +87,7 @@ internal static partial class AnnotationOperationCodec
             ("text", new() { Text = request.Text }),
         };
         if (request.Meta is not null) fields.Add(("meta", RequestMetadata(request.Meta)));
-        var result = new CapabilityArguments { SchemaId = CreateAnnotationSchema, Value = Record(fields) };
-        _ = DecodeCreateAnnotation(result);
-        return result;
+        return new() { SchemaId = CreateAnnotationSchema, Value = Record(fields) };
     }
 
     private static RequestMeta RequestMetadata(StructuredValue value)

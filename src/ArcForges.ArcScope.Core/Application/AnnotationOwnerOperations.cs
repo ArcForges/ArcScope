@@ -16,6 +16,7 @@ using ArcForges.Security;
 using ArcForges.Security.Decisions;
 using ArcForges.Security.Leases;
 using Google.Protobuf;
+using ActorChain = ArcForges.Security.ActorChain;
 
 namespace ArcForges.ArcScope.Core.Application;
 
