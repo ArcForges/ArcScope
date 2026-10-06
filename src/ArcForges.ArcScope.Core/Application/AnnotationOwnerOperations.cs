@@ -28,6 +28,60 @@ internal sealed class AnnotationOwnerOperations(
     internal static string ResourceId(Guid session) => "session:" + session.ToString("D");
     internal static string Revision(long version) => version.ToString(CultureInfo.InvariantCulture);
 
+    /// <summary>Exact persisted data proof only; this does not establish an actor, permission, lease or approval.</summary>
+    internal sealed class CommittedAnnotationProof
+    {
+        internal CommittedAnnotationProof(Guid sessionId, Guid commandId, ulong originalExpectedNative,
+            long committedVersion, long currentVersion, ByteString normalizedArgumentFingerprint)
+        {
+            SessionId = sessionId;
+            CommandId = commandId;
+            OriginalExpectedNative = originalExpectedNative;
+            CommittedVersion = committedVersion;
+            CurrentVersion = currentVersion;
+            NormalizedArgumentFingerprint = normalizedArgumentFingerprint;
+        }
+
+        internal Guid SessionId { get; }
+        internal Guid CommandId { get; }
+        internal ulong OriginalExpectedNative { get; }
+        internal long CommittedVersion { get; }
+        internal long CurrentVersion { get; }
+        internal ByteString NormalizedArgumentFingerprint { get; }
+    }
+
+    internal CommittedAnnotationProof? TryMatchCommittedAnnotation(CapabilityTarget target, Invocation invocation,
+        ScopeOperationsServiceCreateAnnotationRequest rawRequest)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(invocation);
+        ArgumentNullException.ThrowIfNull(rawRequest);
+        if (invocation.Capability != "IScopeOperations.CreateAnnotation" || target.Descriptor.Key != invocation.Capability)
+            return null;
+        var request = rawRequest.Clone();
+        try
+        {
+            // Refuse unknown facts before deriving the same metadata the actual owner hashed at commit.
+            if (!AnnotationOperationCodec.Encode(request).Equals(invocation.Arguments)) return null;
+            _ = UuidBoundary.FromWire(invocation.CommandId);
+            if (!ValidateMetadata(request.Meta, invocation, target, write: true) || !ContractShapeValidation.IsValid(request))
+                return null;
+        }
+        catch (ArgumentException) { return null; }
+        var id = UuidBoundary.FromWire(request.SessionId);
+        var command = UuidBoundary.FromWire(invocation.CommandId);
+        var current = repository.Read(id);
+        if (current is null) return null;
+        var receipt = current.Receipts.SingleOrDefault(item => item.CommandId == command);
+        var original = invocation.ExpectedNative!.Value;
+        if (receipt is null || original >= long.MaxValue || receipt.CommittedVersion != checked((long)original + 1) ||
+            receipt.CommittedVersion > current.Version) return null;
+        var fingerprint = SHA256.HashData(request.ToByteArray());
+        return CryptographicOperations.FixedTimeEquals(receipt.Fingerprint, fingerprint)
+            ? new(id, command, original, receipt.CommittedVersion, current.Version, ByteString.CopyFrom(fingerprint))
+            : null;
+    }
+
     internal async ValueTask<Outcome<ScopeOperationsServiceGetSessionResponse>> GetSessionAsync(
         AuthorizedExecution ticket, CapabilityTarget target, Invocation invocation, ScopeOperationsServiceGetSessionRequest arguments,
         FrozenContextSnapshot context, CancellationToken cancellationToken)
