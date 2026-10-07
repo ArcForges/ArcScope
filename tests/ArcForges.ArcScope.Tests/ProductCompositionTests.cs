@@ -254,6 +254,42 @@ public sealed class ProductCompositionTests
         provider.Release.TrySetResult([]); // The unavailable external callback is owned by the fake and explicitly released.
     }
 
+    [Fact]
+    public async Task ThrowingShutdownCallbackStillDrainsAndEveryDisposeJoinsTheRetainedFault()
+    {
+        using var fixture = new Fixture(); var host = fixture.Host(); var provider = new ThrowingContext(fixture.Instance);
+        var endpoint = fixture.Bind(host, [provider]); var session = Guid.NewGuid();
+        Value(await endpoint.BootstrapAsync(session, "Replay", Configuration(), Cancellation));
+        var pending = endpoint.GetSessionAsync(Read(session, 1), Options(), Cancellation);
+        await provider.Entered.Task.WaitAsync(Cancellation);
+        var availability = new HeldAvailability();
+        var heldEndpoint = fixture.Bind(host, availability: availability);
+        var held = heldEndpoint.GetSessionAsync(Read(session, 1), Options(), Cancellation);
+        await availability.Entered.Task.WaitAsync(Cancellation);
+        try
+        {
+            var first = host.DisposeAsync().AsTask(); var second = host.DisposeAsync().AsTask();
+            Assert.Same(first, second);
+            await provider.CallbackEntered.Task.WaitAsync(Cancellation);
+            await Assert.ThrowsAsync<TimeoutException>(() => first.WaitAsync(TimeSpan.FromMilliseconds(100), Cancellation));
+            Assert.False(held.IsCompleted);
+            availability.Release.TrySetResult(Outcome.Success(AvailabilityResult.Available));
+            var fault = await Assert.ThrowsAsync<AggregateException>(() => first.WaitAsync(TimeSpan.FromSeconds(10), Cancellation));
+            Assert.Contains(fault.Flatten().InnerExceptions, exception => ReferenceEquals(exception, provider.Failure));
+            Assert.Same(first, host.DisposeAsync().AsTask());
+            Assert.NotEqual(OutcomeKind.Success, (await pending.WaitAsync(TimeSpan.FromSeconds(10), Cancellation)).Kind);
+            Assert.NotEqual(OutcomeKind.Success, (await held.WaitAsync(TimeSpan.FromSeconds(10), Cancellation)).Kind);
+            Assert.NotNull(fixture.Repository.Read(session));
+            Assert.Equal(OutcomeKind.Failure, (await endpoint.GetSessionAsync(Read(session, 1), Options(), Cancellation)).Kind);
+        }
+        finally
+        {
+            availability.Release.TrySetResult(Outcome.Success(AvailabilityResult.Available));
+            provider.Release.TrySetResult([]);
+            await provider.Completed.Task.WaitAsync(TimeSpan.FromSeconds(10), Cancellation);
+        }
+    }
+
     private static ProductInvocationOptions Options(bool approval = false) => new(Guid.NewGuid(), Guid.NewGuid(),
         new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" }, approvalId: approval ? Guid.NewGuid() : null);
     private static async Task ApproveAsync(ProductComposition.ProductEndpoint human,
@@ -345,8 +381,8 @@ public sealed class ProductCompositionTests
         internal ProductComposition Host() => new(store, partition, Instance, Owner, Scope, Clock.System, 1,
             approvals, stepUp, leases, new SecurityDecisionAuditSink(Audit, new("arcscope.desktop/1")), new LocalTrace());
         internal ProductComposition.ProductEndpoint Bind(ProductComposition host, IReadOnlyList<IContextProvider>? context = null,
-            IProductHostActorSource? actorSource = null) =>
-            host.BindHostSession(actorSource ?? Session, new UiAvailability(), context ?? [],
+            IProductHostActorSource? actorSource = null, ICapabilityProvider? availability = null) =>
+            host.BindHostSession(actorSource ?? Session, availability ?? new UiAvailability(), context ?? [],
                 (actors, scope, origin) => new DecisionResultRecorder(Audit, actors,
                     new(actors.Actors.Count == 0 ? "arcscope.desktop/1" : actors.Actors[^1].SoftwareIdentity), scope, origin));
         public void Dispose() { Session.Dispose(); Audit.Dispose(); store.Dispose(); Directory.Delete(directory, recursive: true); }
@@ -366,6 +402,31 @@ public sealed class ProductCompositionTests
     { public ValueTask<StepUpAuthentication?> AuthenticateAsync(StepUpChallenge challenge, CancellationToken token = default) => throw new InvalidOperationException("These operations never require an identity step-up."); }
     private sealed class NoLocalPresence : ILocalPresenceVerifier
     { public ValueTask<bool> ConfirmLocalPresenceAsync(StepUpChallenge challenge, CancellationToken token = default) => throw new InvalidOperationException("These operations never require an OS presence assertion."); }
+    private sealed class HeldAvailability : ICapabilityProvider
+    {
+        internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<Outcome<AvailabilityResult>> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool IsBoundToCapability(ActionKey action, string capability) => action.Value == capability && capability == "IScopeOperations.GetSession";
+        public ValueTask<Outcome<AvailabilityResult>> EvaluateAvailabilityAsync(ActionKey action, FrozenContextSnapshot context, CancellationToken token = default)
+        { Entered.TrySetResult(); return new(Release.Task); }
+    }
+    private sealed class ThrowingContext(InstanceIdentity owner) : IContextProvider
+    {
+        public InstanceIdentity Owner => owner;
+        internal InvalidOperationException Failure { get; } = new("Owned test callback failure.");
+        internal TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource CallbackEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource Completed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal TaskCompletionSource<IReadOnlyList<IMessage>> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public async ValueTask<IReadOnlyList<IMessage>> ProvideMessagesAsync(InstanceIdentity expectedOwner, CancellationToken token = default)
+        {
+            using var registration = token.Register(() => { CallbackEntered.TrySetResult(); throw Failure; });
+            Entered.TrySetResult();
+            try { return await Release.Task.ConfigureAwait(false); }
+            finally { Completed.TrySetResult(); }
+        }
+    }
+
     private sealed class BlockedContext(InstanceIdentity owner) : IContextProvider
     {
         public InstanceIdentity Owner => owner;

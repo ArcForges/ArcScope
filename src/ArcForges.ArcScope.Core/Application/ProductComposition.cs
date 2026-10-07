@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using ArcForges.ArcScope.Core.Infrastructure;
 using ArcForges.Capabilities;
 using ArcForges.Contracts.Foundation.V1;
@@ -219,12 +220,21 @@ public sealed class ProductComposition : IAsyncDisposable
             return new(disposal);
         }
     }
+    [SuppressMessage("Usage", "CA1031:Do not catch general exception types", Justification = "Foreign cancellation callbacks and cleanup failures are retained and rethrown only after all owned operations and resources are drained.")]
     private async Task StopAsync()
     {
-        await shutdown.CancelAsync().ConfigureAwait(false);
+        List<Exception> failures = [];
+        try { await shutdown.CancelAsync().ConfigureAwait(false); }
+        catch (Exception exception) { failures.Add(exception); }
         await drained.Task.ConfigureAwait(false);
-        journal?.Dispose(); // The host's borrowed IStore remains host-owned.
-        slots.Dispose(); shutdown.Dispose();
+        try { journal?.Dispose(); } // The host's borrowed IStore remains host-owned.
+        catch (Exception exception) { failures.Add(exception); }
+        try { slots.Dispose(); }
+        catch (Exception exception) { failures.Add(exception); }
+        try { shutdown.Dispose(); }
+        catch (Exception exception) { failures.Add(exception); }
+        if (failures.Count == 1) ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        if (failures.Count > 1) throw new AggregateException(failures);
     }
 
     // The trusted host may use asynchronous context adapters backed by unavailable external systems.
