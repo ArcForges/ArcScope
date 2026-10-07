@@ -205,8 +205,11 @@ public sealed class AnnotationPersistenceTests
     {
         var origin = new ArcForges.Contracts.Foundation.V1.ContentOrigin
         {
-            Profile = "arcforges.content-origin.v1", OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
-            ContentUnitId = new ContentUnitId(id).ToWire(), ProducerKind = "human", OmittedParentCount = 0,
+            Profile = "arcforges.content-origin.v1",
+            OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
+            ContentUnitId = new ContentUnitId(id).ToWire(),
+            ProducerKind = "human",
+            OmittedParentCount = 0,
             PayloadSha256 = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text))),
         };
         origin.Kinds.Add("nonAi");

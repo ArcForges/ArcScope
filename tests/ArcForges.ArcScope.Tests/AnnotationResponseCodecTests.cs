@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 using ArcForges.ArcScope.Core.Application;
-using ArcForges.Contracts.Foundation.Values;
 using ArcForges.Contracts.Foundation.V1;
+using ArcForges.Contracts.Foundation.Values;
 using ArcForges.Contracts.LocalRpc.Scope.V1;
 using ArcForges.Contracts.PublicApi.V1;
 using Google.Protobuf;
@@ -101,38 +101,60 @@ public sealed class AnnotationResponseCodecTests
     {
         var channel = new ChannelDefinition
         {
-            ChannelId = UuidBoundary.ToWire(Guid.NewGuid()), Name = "电压", Unit = "V", SampleType = "binary64",
+            ChannelId = UuidBoundary.ToWire(Guid.NewGuid()),
+            Name = "电压",
+            Unit = "V",
+            SampleType = "binary64",
             Rate = new() { Numerator = long.MaxValue, Denominator = ulong.MaxValue },
             Calibration = new() { Scale = 0, Offset = -0.125, Unit = "V" },
         };
         var frame = new FrameConfiguration
         {
-            Kind = "jsonLine", Start = ByteString.Empty, End = ByteString.CopyFrom([10]),
-            Header = false, ByteOrder = "little",
+            Kind = "jsonLine",
+            Start = ByteString.Empty,
+            End = ByteString.CopyFrom([10]),
+            Header = false,
+            ByteOrder = "little",
         };
         var field = new FrameField { ChannelId = channel.ChannelId.Clone(), ScalarType = "f64", Required = false };
         field.JsonPath.Add(["samples", "0"]);
         frame.Fields.Add(field);
         var configuration = new ScopeConfiguration
         {
-            ConfigurationId = UuidBoundary.ToWire(Guid.NewGuid()), ParserProfile = "v1", Revision = new() { Value = 1 }, Framing = frame,
+            ConfigurationId = UuidBoundary.ToWire(Guid.NewGuid()),
+            ParserProfile = "v1",
+            Revision = new() { Value = 1 },
+            Framing = frame,
             Trigger = new()
             {
-                Kind = "edge", ChannelId = channel.ChannelId.Clone(), Threshold = -1, Direction = "rising", Hysteresis = 0,
+                Kind = "edge",
+                ChannelId = channel.ChannelId.Clone(),
+                Threshold = -1,
+                Direction = "rising",
+                Hysteresis = 0,
                 Holdoff = new() { Ticks = 0, Rate = new() { Numerator = 1, Denominator = 1 } },
                 Pre = new() { Ticks = 0, Rate = new() { Numerator = long.MaxValue, Denominator = ulong.MaxValue } },
-                Post = new() { Ticks = long.MaxValue, Rate = new() { Numerator = long.MaxValue, Denominator = 1 } }, Repeated = false, MaxOccurrences = 1,
+                Post = new() { Ticks = long.MaxValue, Rate = new() { Numerator = long.MaxValue, Denominator = 1 } },
+                Repeated = false,
+                MaxOccurrences = 1,
             },
         };
         configuration.Channels.Add(channel);
         var capture = new CaptureMetadata
         {
-            CaptureId = UuidBoundary.ToWire(Guid.NewGuid()), SampleCount = ulong.MaxValue, ContentHash = new string('a', 64),
+            CaptureId = UuidBoundary.ToWire(Guid.NewGuid()),
+            SampleCount = ulong.MaxValue,
+            ContentHash = new string('a', 64),
             Resource = new()
             {
-                RealmId = UuidBoundary.ToWire(Guid.NewGuid()), WorkspaceId = UuidBoundary.ToWire(Guid.NewGuid()),
-                OwnerAppId = "arcscope", ResourceKind = "capture", ResourceId = UuidBoundary.ToWire(Guid.NewGuid()), DisplayHint = "",
-                Availability = ResourceAvailability.AvailableOffline, HoldingDeviceId = UuidBoundary.ToWire(Guid.NewGuid()),
+                RealmId = UuidBoundary.ToWire(Guid.NewGuid()),
+                WorkspaceId = UuidBoundary.ToWire(Guid.NewGuid()),
+                OwnerAppId = "arcscope",
+                ResourceKind = "capture",
+                ResourceId = UuidBoundary.ToWire(Guid.NewGuid()),
+                DisplayHint = "",
+                Availability = ResourceAvailability.AvailableOffline,
+                HoldingDeviceId = UuidBoundary.ToWire(Guid.NewGuid()),
             },
         };
         capture.Channels.Add(channel.Clone());

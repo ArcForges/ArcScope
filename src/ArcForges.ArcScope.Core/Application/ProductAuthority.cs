@@ -151,8 +151,11 @@ internal sealed class ProductAuthority(AnnotationSessionRepository repository, I
     {
         if (committedOwner is null || invocation.Capability != "IScopeOperations.CreateAnnotation" || invocation.Arguments is null)
             return null;
-        try { return committedOwner.TryMatchCommittedAnnotation(target, invocation,
-            AnnotationOperationCodec.DecodeCreateAnnotation(invocation.Arguments)); }
+        try
+        {
+            return committedOwner.TryMatchCommittedAnnotation(target, invocation,
+            AnnotationOperationCodec.DecodeCreateAnnotation(invocation.Arguments));
+        }
         catch (ArgumentException) { return null; }
     }
 

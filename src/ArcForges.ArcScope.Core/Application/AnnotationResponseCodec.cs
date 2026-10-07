@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 using ArcForges.Contracts.Foundation.V1;
+using ArcForges.Contracts.LocalRpc.Scope.Shapes;
 using ArcForges.Contracts.LocalRpc.Scope.V1;
 using ArcForges.Contracts.PublicApi.V1;
 using Google.Protobuf;
-using ArcForges.Contracts.LocalRpc.Scope.Shapes;
 
 namespace ArcForges.ArcScope.Core.Application;
 

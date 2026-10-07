@@ -91,11 +91,21 @@ public sealed class AnnotationReceiptProofTests
             Directory.CreateDirectory(directory);
             store = Open();
             Target = new(Instance, CapabilityRegistry.CreateInitial().Find("IScopeOperations.CreateAnnotation")!.Descriptor, InstanceHealth.Ready, true);
-            Request = new() { SessionId = UuidBoundary.ToWire(Session), AnnotationId = UuidBoundary.ToWire(Guid.NewGuid()),
-                Range = new() { From = 0, Count = 0 }, Text = "actual committed data",
-                Meta = new() { CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()), ExpectedNative = new() { Value = 1 } } };
-            Invocation = new() { CommandId = UuidBoundary.ToWire(Guid.NewGuid()), Capability = "IScopeOperations.CreateAnnotation",
-                Arguments = AnnotationOperationCodec.Encode(Request), ExpectedNative = Request.Meta.ExpectedNative.Clone() };
+            Request = new()
+            {
+                SessionId = UuidBoundary.ToWire(Session),
+                AnnotationId = UuidBoundary.ToWire(Guid.NewGuid()),
+                Range = new() { From = 0, Count = 0 },
+                Text = "actual committed data",
+                Meta = new() { CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()), ExpectedNative = new() { Value = 1 } }
+            };
+            Invocation = new()
+            {
+                CommandId = UuidBoundary.ToWire(Guid.NewGuid()),
+                Capability = "IScopeOperations.CreateAnnotation",
+                Arguments = AnnotationOperationCodec.Encode(Request),
+                ExpectedNative = Request.Meta.ExpectedNative.Clone()
+            };
         }
         private SqliteStore Open() => new(Path.Combine(directory, "owner.db"), storeId, new HostWriteAuthorization());
         internal void Reopen() { store.Dispose(); store = Open(); }
@@ -107,9 +117,14 @@ public sealed class AnnotationReceiptProofTests
             normalized.Meta.ApplicationScope = Instance.Installation.ToApplicationScope();
             normalized.Meta.RecoveryGeneration = 1;
             var origin = new ArcForges.Contracts.Foundation.V1.ContentOrigin
-            { Profile = "arcforges.content-origin.v1", OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
-                ContentUnitId = new ContentUnitId(UuidBoundary.FromWire(Request.AnnotationId)).ToWire(), ProducerKind = "human", OmittedParentCount = 0,
-                PayloadSha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Request.Text))) };
+            {
+                Profile = "arcforges.content-origin.v1",
+                OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
+                ContentUnitId = new ContentUnitId(UuidBoundary.FromWire(Request.AnnotationId)).ToWire(),
+                ProducerKind = "human",
+                OmittedParentCount = 0,
+                PayloadSha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Request.Text)))
+            };
             origin.Kinds.Add("nonAi");
             var note = new ScopeAnnotation { AnnotationId = Request.AnnotationId.Clone(), Range = Request.Range.Clone(), Text = Request.Text, Origin = origin };
             Assert.True(await Repository.TryAppendAsync(Repository.Read(Session)!, note, UuidBoundary.FromWire(Invocation.CommandId),

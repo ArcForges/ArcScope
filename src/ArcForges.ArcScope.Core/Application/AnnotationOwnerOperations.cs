@@ -142,7 +142,9 @@ internal sealed class AnnotationOwnerOperations(
             return Failure<ScopeOperationsServiceCreateAnnotationResponse>("resource.unavailable");
         var annotation = new ScopeAnnotation
         {
-            AnnotationId = arguments.AnnotationId.Clone(), Range = range.Clone(), Text = arguments.Text,
+            AnnotationId = arguments.AnnotationId.Clone(),
+            Range = range.Clone(),
+            Text = arguments.Text,
             Origin = Origin(annotationId, arguments.Text, ticket.Actors),
         };
         if (!await repository.TryAppendAsync(current, annotation, command, fingerprint, cancellationToken).ConfigureAwait(false))
@@ -188,10 +190,13 @@ internal sealed class AnnotationOwnerOperations(
         var delegated = actors.Actors.Count != 0;
         var origin = new ContentOrigin
         {
-            Profile = "arcforges.content-origin.v1", OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
-            ContentUnitId = new ContentUnitId(annotation).ToWire(), ProducerKind = delegated ? "import" : "human",
+            Profile = "arcforges.content-origin.v1",
+            OriginId = new ContentOriginId(Guid.NewGuid()).ToWire(),
+            ContentUnitId = new ContentUnitId(annotation).ToWire(),
+            ProducerKind = delegated ? "import" : "human",
             PayloadSha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text))),
-            CreatedAt = WireValues.ToWire(clock.GetCurrentInstant()), OmittedParentCount = 0,
+            CreatedAt = WireValues.ToWire(clock.GetCurrentInstant()),
+            OmittedParentCount = 0,
         };
         // The request carries no model provenance. Preserve that uncertainty rather than label delegated text non-AI.
         origin.Kinds.Add(delegated ? "unknown" : "nonAi");

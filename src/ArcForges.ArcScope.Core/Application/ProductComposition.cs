@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-using ActorChain = ArcForges.Security.ActorChain;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Google.Protobuf;
 using ArcForges.ArcScope.Core.Infrastructure;
 using ArcForges.Capabilities;
 using ArcForges.Contracts.Foundation.V1;
@@ -19,6 +17,8 @@ using ArcForges.Security.Approvals;
 using ArcForges.Security.CapabilityEnforcement;
 using ArcForges.Security.Decisions;
 using ArcForges.Security.Leases;
+using Google.Protobuf;
+using ActorChain = ArcForges.Security.ActorChain;
 
 namespace ArcForges.ArcScope.Core.Application;
 
@@ -292,8 +292,11 @@ public sealed class ProductComposition : IAsyncDisposable
         {
             var invocation = new Invocation
             {
-                InvocationId = UuidBoundary.ToWire(options.InvocationId), CommandId = UuidBoundary.ToWire(options.CommandId),
-                Capability = key, Arguments = arguments, Context = options.Context,
+                InvocationId = UuidBoundary.ToWire(options.InvocationId),
+                CommandId = UuidBoundary.ToWire(options.CommandId),
+                Capability = key,
+                Arguments = arguments,
+                Context = options.Context,
                 ApprovalId = options.ApprovalId is { } approval ? UuidBoundary.ToWire(approval) : null,
                 LeaseId = options.LeaseId is { } lease ? UuidBoundary.ToWire(lease) : null,
             };
