@@ -123,13 +123,41 @@ public sealed class ProductHostActorSession : IProductHostActorSource, IDisposab
 // reloads the host source. Resource revision is fresh and distinct from the original command precondition,
 // allowing an already committed command to replay only after renewed service authorization.
 internal sealed class ProductAuthority(AnnotationSessionRepository repository, InstanceIdentity instance,
-    HumanPrincipal owner, DecisionScope scope, IClock clock, IProductHostActorSource actors, CancellationToken lifetime = default)
+    HumanPrincipal owner, DecisionScope scope, IClock clock, IProductHostActorSource actors, AnnotationOwnerOperations? committedOwner = null, CancellationToken lifetime = default)
     : ICapabilityEvidenceSource, IProductPolicy, IActorIdentityVerifier, IScopeAuthority, ITrustEvaluator,
       IPermissionSource, IResourceAuthorizer, IOwnerValidator, IDataBoundaryAuthorizer,
       ISensitiveOperationSource, ILeaseCeilingSource
 {
     private readonly object actorReadGate = new();
     private Task<ProductHostActorSnapshot?>? actorRead;
+    private readonly AsyncLocal<InvocationFrame?> invocationFrame = new();
+
+    // This bounded execution-flow capture is installed only by the private typed endpoint, never by request JSON.
+    // It is data proof for original command replay; all actor/grant/trust/approval/lease queries remain fresh.
+    internal IDisposable EnterInvocation(Invocation invocation, CapabilityTarget target)
+    {
+        var previous = invocationFrame.Value;
+        invocationFrame.Value = new(invocation.Clone(), target);
+        return new InvocationScope(invocationFrame, previous);
+    }
+
+    private sealed record InvocationFrame(Invocation Invocation, CapabilityTarget Target);
+    private sealed class InvocationScope(AsyncLocal<InvocationFrame?> capture, InvocationFrame? previous) : IDisposable
+    {
+        public void Dispose() => capture.Value = previous;
+    }
+
+    private AnnotationOwnerOperations.CommittedAnnotationProof? MatchCommitted(Invocation invocation, CapabilityTarget target)
+    {
+        if (committedOwner is null || invocation.Capability != "IScopeOperations.CreateAnnotation" || invocation.Arguments is null)
+            return null;
+        try { return committedOwner.TryMatchCommittedAnnotation(target, invocation,
+            AnnotationOperationCodec.DecodeCreateAnnotation(invocation.Arguments)); }
+        catch (ArgumentException) { return null; }
+    }
+
+    internal bool CurrentResource(ResourceReference resource) => ResourceIsCurrent(resource);
+
 
     internal static bool IsOwnedCapability(string key) =>
         key is "IScopeOperations.GetSession" or "IScopeOperations.CreateAnnotation";
@@ -209,8 +237,12 @@ internal sealed class ProductAuthority(AnnotationSessionRepository repository, I
         catch (ArgumentException) { return null; }
         var stored = repository.Read(session);
         if (stored is null) return null;
+        var committed = MatchCommitted(invocation, target);
+        var resourceRevision = committed is null
+            ? AnnotationOwnerOperations.Revision(stored.Version)
+            : committed.OriginalExpectedNative.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return new(current.Actors, scope,
-            new(AnnotationOwnerOperations.ResourceId(session), AnnotationOwnerOperations.Revision(stored.Version)),
+            new(AnnotationOwnerOperations.ResourceId(session), resourceRevision),
             current.Origin, current.Transport, RiskFacts.None);
     }
 
@@ -251,13 +283,25 @@ internal sealed class ProductAuthority(AnnotationSessionRepository repository, I
         var session = repository.Read(id);
         return session is not null && resource.Revision == AnnotationOwnerOperations.Revision(session.Version);
     }
+    private bool ResourceIsCurrentOrCommitted(DecisionRequest request)
+    {
+        if (ResourceIsCurrent(request.Resource)) return true;
+        var frame = invocationFrame.Value;
+        if (frame is null || frame.Invocation.Capability != request.CapabilityKey ||
+            UuidBoundary.FromWire(frame.Invocation.CommandId) != request.CommandId.Value ||
+            CapabilityEnforcementGate.ComputeEffectSha256(request.CapabilityKey, frame.Invocation, frame.Target) != request.EffectSha256)
+            return false;
+        var proof = MatchCommitted(frame.Invocation, frame.Target);
+        return proof is not null && request.Resource.Id == AnnotationOwnerOperations.ResourceId(proof.SessionId) &&
+            request.Resource.Revision == proof.OriginalExpectedNative.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
     public async ValueTask<ResourceVerdict?> AuthorizeAsync(DecisionRequest request, CancellationToken cancellationToken) =>
-        new(await ForRequestAsync(request, cancellationToken).ConfigureAwait(false) is not null && ResourceIsCurrent(request.Resource)
+        new(await ForRequestAsync(request, cancellationToken).ConfigureAwait(false) is not null && ResourceIsCurrentOrCommitted(request)
             ? ResourceDisposition.Authorized : ResourceDisposition.Denied, RiskFacts.None);
     public async ValueTask<OwnerVerdict> ValidateAsync(OwnerValidationRequest request, CancellationToken cancellationToken)
     {
         if (await ForRequestAsync(request.Request, cancellationToken).ConfigureAwait(false) is null) return OwnerVerdict.Refused;
-        return ResourceIsCurrent(request.Request.Resource) ? OwnerVerdict.Valid : OwnerVerdict.RevisionChanged;
+        return ResourceIsCurrentOrCommitted(request.Request) ? OwnerVerdict.Valid : OwnerVerdict.RevisionChanged;
     }
     public ValueTask<BoundaryVerdict> AuthorizeSecretUseAsync(DecisionRequest request, CancellationToken cancellationToken)
     { cancellationToken.ThrowIfCancellationRequested(); return ValueTask.FromResult(BoundaryVerdict.Denied); }

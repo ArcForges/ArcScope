@@ -32,13 +32,14 @@ public sealed class ProductCompositionTests
     {
         using var fixture = new Fixture();
         var session = Guid.NewGuid();
-        var options = Options();
+        var options = Options(approval: true);
         var request = Append(session, options, 1, "真实注释");
         await using (var host = fixture.Host())
         {
             var endpoint = fixture.Bind(host);
             var configuration = Configuration();
             Assert.Equal(configuration, Value(await endpoint.BootstrapAsync(session, "Replay", configuration, Cancellation)).Configuration);
+            await ApproveAsync(endpoint, request, options);
             Assert.Equal(2UL, Value(await endpoint.CreateAnnotationAsync(request, options, Cancellation)).Value.Revision.Value);
             // Original native precondition remains 1. Fresh authority is checked before durable replay.
             Assert.Equal(2UL, Value(await endpoint.CreateAnnotationAsync(request, options, Cancellation)).Value.Revision.Value);
@@ -49,16 +50,22 @@ public sealed class ProductCompositionTests
             projection.Annotations[0].Text = "changed caller clone";
             Assert.Equal("真实注释", Assert.Single(projection.Annotations).Text);
             Assert.Equal(OutcomeKind.Failure, (await endpoint.GetAnnotationHistoryAsync(session, 1, Options(), Cancellation)).Kind);
+            var next = Options(approval: true); var nextRequest = Append(session, next, 2, "later annotation");
+            await ApproveAsync(endpoint, nextRequest, next);
+            Assert.Equal(3UL, Value(await endpoint.CreateAnnotationAsync(nextRequest, next, Cancellation)).Value.Revision.Value);
+            var retry = new ProductInvocationOptions(Guid.NewGuid(), options.CommandId, options.Context, options.ApprovalId);
+            Assert.Equal(2UL, Value(await endpoint.CreateAnnotationAsync(request, retry, Cancellation)).Value.Revision.Value);
+            Assert.Equal(3, fixture.Repository.Read(session)!.Version);
         }
         fixture.ReopenOwnerStore();
         await using (var reopened = fixture.Host())
         {
             var endpoint = fixture.Bind(reopened);
             Assert.Equal(2UL, Value(await endpoint.CreateAnnotationAsync(request, options, Cancellation)).Value.Revision.Value);
-            var read = Value(await endpoint.GetSessionAsync(Read(session, 2), Options(), Cancellation));
+            var read = Value(await endpoint.GetSessionAsync(Read(session, 3), Options(), Cancellation));
             Assert.Equal("Replay", read.Value.Session.Name);
             Assert.Empty(read.Value.Session.Captures);
-            Assert.Single(Value(await endpoint.GetAnnotationHistoryAsync(session, 2, Options(), Cancellation)).Annotations);
+            Assert.Equal(2, Value(await endpoint.GetAnnotationHistoryAsync(session, 3, Options(), Cancellation)).Annotations.Count);
         }
         Assert.Contains(fixture.Audit.Query(new(DateTimeOffset.UtcNow.AddMinutes(-5), DateTimeOffset.UtcNow.AddMinutes(5), 100)),
             item => item.Event.EventType == AuditEventType.InvocationResult && item.Event.ActorChain.Owner == fixture.Owner);
@@ -72,7 +79,8 @@ public sealed class ProductCompositionTests
         var endpoint = fixture.Bind(host);
         var session = Guid.NewGuid();
         Value(await endpoint.BootstrapAsync(session, "Replay", Configuration(), Cancellation));
-        var options = Options(); var request = Append(session, options, 1, "once");
+        var options = Options(approval: true); var request = Append(session, options, 1, "once");
+        await ApproveAsync(endpoint, request, options);
         Value(await endpoint.CreateAnnotationAsync(request, options, Cancellation));
         fixture.Session.Dispose();
         Assert.Equal(OutcomeKind.Failure, (await endpoint.CreateAnnotationAsync(request, options, Cancellation)).Kind);
@@ -99,12 +107,14 @@ public sealed class ProductCompositionTests
         Assert.Equal(OutcomeKind.Failure, (await agent.CreateAnnotationAsync(Append(sessionId, missing, 1, "without lease"), missing, Cancellation)).Kind);
         var issued = await fixture.Leases.IssueAsync(new(current.Actors, fixture.Scope, new TaskId(Guid.NewGuid()),
             new(ActorKind.Agent, actor.ActorId), "IScopeOperations.CreateAnnotation", ["session:" + sessionId.ToString("D")],
-            RiskLevel.R1, DecisionOrigin.Local, LeaseIssueBasis.PolicyAllowed, TimeSpan.FromMinutes(1)), Cancellation);
+            RiskLevel.R2, DecisionOrigin.Local, LeaseIssueBasis.UserApproved, TimeSpan.FromMinutes(1)), Cancellation);
         Assert.True(issued.Issued, issued.RegisteredCode);
         var lease = issued.Lease!;
         var options = new ProductInvocationOptions(Guid.NewGuid(), Guid.NewGuid(),
-            new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" }, leaseId: lease.Id.Value);
+            new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" }, approvalId: Guid.NewGuid(), leaseId: lease.Id.Value);
         var request = Append(sessionId, options, 1, "assistant draft");
+        Assert.Equal(OutcomeKind.Failure, (await agent.RequestAnnotationApprovalAsync(request, options, TimeSpan.FromMinutes(1), Cancellation)).Kind);
+        await ApproveAsync(human, request, options);
         Assert.Equal(2UL, Value(await agent.CreateAnnotationAsync(request, options, Cancellation)).Value.Revision.Value);
         Assert.Equal("unknown", Assert.Single(Assert.Single(fixture.Repository.Read(sessionId)!.Metadata.Annotations).Origin.Kinds));
         Value(await fixture.Leases.RevokeAsync(lease.Id, fixture.Owner, LeaseRevocationReason.OwnerRevoked, Cancellation));
@@ -123,12 +133,29 @@ public sealed class ProductCompositionTests
         await using var host = fixture.Host();
         var endpoint = fixture.Bind(host); var session = Guid.NewGuid();
         Value(await endpoint.BootstrapAsync(session, "Replay", Configuration(), Cancellation));
-        var left = Options(); var right = Options();
-        var outcomes = await Task.WhenAll(endpoint.CreateAnnotationAsync(Append(session, left, 1, "left"), left, Cancellation),
-            endpoint.CreateAnnotationAsync(Append(session, right, 1, "right"), right, Cancellation));
+        var left = Options(approval: true); var right = Options(approval: true);
+        var leftRequest = Append(session, left, 1, "left"); var rightRequest = Append(session, right, 1, "right");
+        await ApproveAsync(endpoint, leftRequest, left); await ApproveAsync(endpoint, rightRequest, right);
+        var outcomes = await Task.WhenAll(endpoint.CreateAnnotationAsync(leftRequest, left, Cancellation),
+            endpoint.CreateAnnotationAsync(rightRequest, right, Cancellation));
         Assert.Single(outcomes, result => result.Kind == OutcomeKind.Success);
         Assert.Single(fixture.Repository.Read(session)!.Metadata.Annotations);
         Assert.Equal(2, fixture.Repository.Read(session)!.Version);
+    }
+
+    [Fact]
+    public async Task PendingApprovalCannotExecuteAndRevokedHumanCannotDecide()
+    {
+        using var fixture = new Fixture(); await using var host = fixture.Host(); var human = fixture.Bind(host);
+        var session = Guid.NewGuid(); Value(await human.BootstrapAsync(session, "Approval", Configuration(), Cancellation));
+        var options = Options(approval: true); var request = Append(session, options, 1, "proposed");
+        Assert.Equal(ApprovalState.Pending, Value(await human.RequestAnnotationApprovalAsync(request, options,
+            TimeSpan.FromMinutes(1), Cancellation)).Snapshot.State);
+        Assert.Equal(OutcomeKind.Failure, (await human.CreateAnnotationAsync(request, options, Cancellation)).Kind);
+        fixture.Session.Dispose();
+        Assert.Equal(OutcomeKind.Failure, (await human.DecideAnnotationApprovalAsync(options.ApprovalId!.Value,
+            Guid.NewGuid(), ApprovalDecisionKind.Approve, cancellationToken: Cancellation)).Kind);
+        Assert.Empty(fixture.Repository.Read(session)!.Metadata.Annotations);
     }
 
     [Fact]
@@ -227,22 +254,45 @@ public sealed class ProductCompositionTests
         provider.Release.TrySetResult([]); // The unavailable external callback is owned by the fake and explicitly released.
     }
 
-    private static ProductInvocationOptions Options() => new(Guid.NewGuid(), Guid.NewGuid(),
-        new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" });
+    private static ProductInvocationOptions Options(bool approval = false) => new(Guid.NewGuid(), Guid.NewGuid(),
+        new FrozenContext { ProfileVersion = "profile.1", PermissionsVersion = "permissions.1" }, approvalId: approval ? Guid.NewGuid() : null);
+    private static async Task ApproveAsync(ProductComposition.ProductEndpoint human,
+        ScopeOperationsServiceCreateAnnotationRequest request, ProductInvocationOptions options)
+    {
+        var pending = Value(await human.RequestAnnotationApprovalAsync(request, options, TimeSpan.FromMinutes(1), Cancellation));
+        Assert.Equal(ApprovalState.Pending, pending.Snapshot.State);
+        var decided = Value(await human.DecideAnnotationApprovalAsync(options.ApprovalId!.Value,
+            Guid.NewGuid(), ApprovalDecisionKind.Approve, cancellationToken: Cancellation));
+        Assert.Equal(ApprovalState.Approved, decided.Snapshot.State);
+    }
     private static ScopeOperationsServiceGetSessionRequest Read(Guid session, ulong version) => new()
     { SessionId = UuidBoundary.ToWire(session), Meta = new() { CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()), ExpectedNative = new() { Value = version } } };
     private static ScopeOperationsServiceCreateAnnotationRequest Append(Guid session, ProductInvocationOptions options, ulong version, string text) => new()
     {
-        SessionId = UuidBoundary.ToWire(session), AnnotationId = UuidBoundary.ToWire(Guid.NewGuid()),
-        Range = new() { From = 0, Count = 0 }, Text = text,
+        SessionId = UuidBoundary.ToWire(session),
+        AnnotationId = UuidBoundary.ToWire(Guid.NewGuid()),
+        Range = new() { From = 0, Count = 0 },
+        Text = text,
         Meta = new() { CommandId = UuidBoundary.ToWire(options.CommandId), CorrelationId = UuidBoundary.ToWire(Guid.NewGuid()), ExpectedNative = new() { Value = version } },
     };
     private static ScopeConfiguration Configuration()
     {
-        var channel = new ChannelDefinition { ChannelId = UuidBoundary.ToWire(Guid.NewGuid()), Name = "Voltage", Unit = "V",
-            SampleType = "binary64", Rate = new() { Numerator = 1, Denominator = 1 }, Calibration = new() { Scale = 1, Offset = 0, Unit = "V" } };
-        var configuration = new ScopeConfiguration { ConfigurationId = UuidBoundary.ToWire(Guid.NewGuid()), ParserProfile = "v1",
-            Revision = new() { Value = 1 }, Framing = new() { Kind = "canonicalReplay", Start = ByteString.Empty, End = ByteString.Empty, Header = false, ByteOrder = "little" } };
+        var channel = new ChannelDefinition
+        {
+            ChannelId = UuidBoundary.ToWire(Guid.NewGuid()),
+            Name = "Voltage",
+            Unit = "V",
+            SampleType = "binary64",
+            Rate = new() { Numerator = 1, Denominator = 1 },
+            Calibration = new() { Scale = 1, Offset = 0, Unit = "V" }
+        };
+        var configuration = new ScopeConfiguration
+        {
+            ConfigurationId = UuidBoundary.ToWire(Guid.NewGuid()),
+            ParserProfile = "v1",
+            Revision = new() { Value = 1 },
+            Framing = new() { Kind = "canonicalReplay", Start = ByteString.Empty, End = ByteString.Empty, Header = false, ByteOrder = "little" }
+        };
         configuration.Channels.Add(channel); return configuration;
     }
 

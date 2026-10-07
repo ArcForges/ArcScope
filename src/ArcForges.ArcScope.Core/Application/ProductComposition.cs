@@ -127,12 +127,12 @@ public sealed class ProductComposition : IAsyncDisposable
         lock (lifecycle)
         {
             ObjectDisposedException.ThrowIf(closing, this);
-            var authority = new ProductAuthority(repository, instance, owner, scope, clock, actorSource, shutdown.Token);
+            var operation = new AnnotationOwnerOperations(repository, instance, scope, owner, leases, clock, recoveryGeneration);
+            var authority = new ProductAuthority(repository, instance, owner, scope, clock, actorSource, operation, shutdown.Token);
             var security = new SecurityDecisionPipeline(new(clock, new RegistryCapabilityCatalogue(catalogue),
                 authority, authority, authority, authority, authority, authority, authority,
                 approvals, stepUp, authority, authority, actorBoundRecorder, audit, leases));
             var gate = new CapabilityEnforcementGate(security, authority);
-            var operation = new AnnotationOwnerOperations(repository, instance, scope, owner, leases, clock, recoveryGeneration);
             var history = new ConcurrentDictionary<Guid, AnnotationHistory>();
             var historyRequests = new ConcurrentDictionary<Guid, byte>();
             async ValueTask<Outcome<ScopeOperationsServiceGetSessionResponse>> ReadWithProjection(AuthorizedExecution ticket,
@@ -287,8 +287,8 @@ public sealed class ProductComposition : IAsyncDisposable
                 AnnotationOperationCodec.Encode(copy), copy.Meta, options, token).ConfigureAwait(false),
                 AnnotationOperationCodec.DecodeCreateAnnotationResponse), cancellationToken);
         }
-        private Task<InvocationOutcome> InvokeAsync(string key, CapabilityArguments arguments, RequestMeta? metadata,
-            ProductInvocationOptions options, CancellationToken token)
+        private static Invocation BuildInvocation(string key, CapabilityArguments arguments, RequestMeta? metadata,
+            ProductInvocationOptions options)
         {
             var invocation = new Invocation
             {
@@ -300,12 +300,20 @@ public sealed class ProductComposition : IAsyncDisposable
             // The published precondition is a protobuf oneof: assigning the other null arm clears the native arm.
             if (metadata?.ExpectedNative is { } native) invocation.ExpectedNative = native.Clone();
             else if (metadata?.ExpectedRev is { } revision) invocation.ExpectedRev = revision.Clone();
+            return invocation;
+        }
+
+        private async Task<InvocationOutcome> InvokeAsync(string key, CapabilityArguments arguments, RequestMeta? metadata,
+            ProductInvocationOptions options, CancellationToken token)
+        {
+            var invocation = BuildInvocation(key, arguments, metadata, options);
             var registration = host.catalogue.Find(key)!;
             var target = new CapabilityTarget(host.instance, registration.Descriptor, InstanceHealth.Ready, true);
             // This instance is actual in-process composition; RunAsync admits work only while it is running.
-            return pipeline.InvokeAsync(invocation, new ActionKey(key),
+            using var captured = authority.EnterInvocation(invocation, target);
+            return await pipeline.InvokeAsync(invocation, new ActionKey(key),
                 FrozenContextSnapshot.Freeze(host.instance, [], ContextSnapshotBudget.Default), [target], contexts,
-                capturedTarget: host.instance, cancellationToken: token).AsTask();
+                capturedTarget: host.instance, cancellationToken: token).ConfigureAwait(false);
         }
         private static Outcome<T> Convert<T>(InvocationOutcome result, Func<CapabilityResult, T> decode) => result.Kind switch
         {
@@ -314,6 +322,55 @@ public sealed class ProductComposition : IAsyncDisposable
             OutcomeKind.Cancelled => Outcome.Cancelled<T>(result.CancellationEffect),
             _ => Failure<T>("internal.unexpected"),
         };
+
+        /// <summary>Durable pending R2 action for this exact typed request; requesting never approves or executes it.</summary>
+        public Task<Outcome<ApprovalMutation>> RequestAnnotationApprovalAsync(
+            ScopeOperationsServiceCreateAnnotationRequest request, ProductInvocationOptions options, TimeSpan lifetime,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request); ArgumentNullException.ThrowIfNull(options);
+            var copy = request.Clone();
+            return host.RunAsync(async token =>
+            {
+                if (options.ApprovalId is not { } approval || copy.Meta?.ExpectedNative is not { HasValue: true, Value: > 0 } version ||
+                    version.Value > long.MaxValue || !ContractShapeValidation.IsValid(copy) ||
+                    copy.Meta.CommandId is not null && !copy.Meta.CommandId.Equals(UuidBoundary.ToWire(options.CommandId)) ||
+                    copy.Meta.WorkspaceId is not null && (host.scope.Workspace is null || !copy.Meta.WorkspaceId.Equals(host.scope.Workspace.Value.ToWire())) ||
+                    copy.Meta.ApplicationScope is not null && !copy.Meta.ApplicationScope.Equals(host.instance.Installation.ToApplicationScope()) ||
+                    copy.Meta.HasRecoveryGeneration && copy.Meta.RecoveryGeneration != host.recoveryGeneration)
+                    return Failure<ApprovalMutation>("validation.invalid_request");
+                if (!await authority.CanBootstrapAsync(token).ConfigureAwait(false)) return Failure<ApprovalMutation>("perm.capability_denied");
+                const string key = "IScopeOperations.CreateAnnotation";
+                var resource = new ResourceReference(AnnotationOwnerOperations.ResourceId(UuidBoundary.FromWire(copy.SessionId)),
+                    AnnotationOwnerOperations.Revision(checked((long)version.Value)));
+                if (!authority.CurrentResource(resource)) return Failure<ApprovalMutation>("conflict.revision_mismatch");
+                var invocation = BuildInvocation(key, AnnotationOperationCodec.Encode(copy), copy.Meta, options);
+                var target = new CapabilityTarget(host.instance, host.catalogue.Find(key)!.Descriptor, InstanceHealth.Ready, true);
+                var intent = new ApprovalIntent(approval, new CommandId(options.CommandId), host.owner, key, resource.Id,
+                    resource.Revision, CapabilityEnforcementGate.ComputeEffectSha256(key, invocation, target), RiskLevel.R2);
+                return await host.approvals.RequestAsync(intent, lifetime, token).ConfigureAwait(false);
+            }, cancellationToken);
+        }
+
+        /// <summary>Current registered local human decides a real pending action; caller data carries no principal or timestamp.</summary>
+        public Task<Outcome<ApprovalMutation>> DecideAnnotationApprovalAsync(Guid approvalId, Guid decisionId,
+            ApprovalDecisionKind decision, string? reason = null, CancellationToken cancellationToken = default) =>
+            host.RunAsync(async token =>
+            {
+                if (!await authority.CanBootstrapAsync(token).ConfigureAwait(false)) return Failure<ApprovalMutation>("perm.capability_denied");
+                var result = await host.approvals.GetAsync(approvalId, token).ConfigureAwait(false);
+                if (!result.TryGetValue(out var snapshot)) return result.Kind == OutcomeKind.Cancelled
+                    ? Outcome.Cancelled<ApprovalMutation>(result.CancellationEffect)
+                    : result.TryGetFailure(out var failure) ? Outcome.Failure<ApprovalMutation>(failure!)
+                    : Failure<ApprovalMutation>("perm.approval_required");
+                if (snapshot!.Owner != host.owner || snapshot.OperationId != "IScopeOperations.CreateAnnotation" ||
+                    snapshot.EffectiveRisk != RiskLevel.R2 || !authority.CurrentResource(new(snapshot.TargetResourceId, snapshot.TargetRevision)) ||
+                    !await authority.CanBootstrapAsync(token).ConfigureAwait(false)) return Failure<ApprovalMutation>("perm.capability_denied");
+                var current = await authority.CurrentAsync(token).ConfigureAwait(false);
+                if (current is null) return Failure<ApprovalMutation>("perm.capability_denied");
+                return await host.approvals.DecideAsync(approvalId,
+                    new(decisionId, decision, current.Actors.Owner, current.Actors.Device, ApprovalOrigin.Local, reason), token).ConfigureAwait(false);
+            }, cancellationToken);
 
         /// <summary>Intentional trusted-human creation; supplied configuration is validated and stored, with no capture proof.</summary>
         public Task<Outcome<ScopeSession>> BootstrapAsync(Guid sessionId, string name, ScopeConfiguration configuration,
