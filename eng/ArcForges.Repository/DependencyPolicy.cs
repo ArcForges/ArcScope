@@ -16,12 +16,19 @@ public static partial class DependencyPolicy
         ["ArcForges.Build.Policy"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Foundation"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Application.Abstractions"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Capabilities"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Persistence.Sqlite"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Security"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Security.CapabilityEnforcement"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Security.Audit"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Native.Image"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Native.Abstractions"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Native.Image.Runtime.win-x64"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Contracts.Foundation"] = "https://github.com/ArcForges/Contracts",
         ["ArcForges.Contracts.LocalRpc.Scope"] = "https://github.com/ArcForges/Contracts",
-        ["ArcForges.Contracts.PublicApi"] = "https://github.com/ArcForges/Contracts"
+        ["ArcForges.Contracts.PublicApi"] = "https://github.com/ArcForges/Contracts",
+        ["ArcForges.Contracts.LocalRpc.Platform"] = "https://github.com/ArcForges/Contracts",
+        ["ArcForges.Sdk.Contracts"] = "https://github.com/ArcForges/Contracts"
     };
 
     // Historical Git snapshots retain every admitted coordinate, including removed dependencies.
@@ -70,7 +77,7 @@ public static partial class DependencyPolicy
         Require(policy.GetProperty("schemaVersion").GetInt32() == 1 && Text(policy, "repository") == "ArcScope" && Text(policy, "licenceBoundary") == "AGPL", "Invalid dependency owner.");
         Require(Text(policy, "channel") is "foundation-candidate" or "stable", "Invalid dependency channel.");
         Require(Text(policy, "feed") == Feed, "Wrong dependency feed.");
-        Require(Text(policy, "nativeAdmission") == "existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate", "Unreviewed native admission.");
+        Require(Text(policy, "nativeAdmission") == "existing-framework-closure; admitted DesktopPlatform Image ABI1.0 win-x64 exact candidate; admitted Microsoft.Data.Sqlite10.0.12 SQLitePCLRaw.lib.e_sqlite3 2.1.12 owner-store runtime closure", "Unreviewed native admission.");
         var admitted = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in policy.GetProperty("packages").EnumerateArray())
         {
@@ -79,7 +86,7 @@ public static partial class DependencyPolicy
             Require(ExactVersion().IsMatch(version), "Floating dependency version.");
             Require(admitted.TryAdd(id + "/" + version, entry), "Duplicate dependency admission.");
             var licence = Text(entry, "licence");
-            Require(licence is "MIT" or "Apache-2.0" or "BSD-3-Clause" || licence == "AGPL-3.0-only" && id is "ArcForges.Build.Policy" or "ArcForges.Foundation" or "ArcForges.Application.Abstractions" or "ArcForges.Native.Image" or "ArcForges.Native.Abstractions" or "ArcForges.Native.Image.Runtime.win-x64", "Forbidden dependency licence.");
+            Require(licence is "MIT" or "Apache-2.0" or "BSD-3-Clause" || licence == "AGPL-3.0-only" && id is "ArcForges.Build.Policy" or "ArcForges.Foundation" or "ArcForges.Application.Abstractions" or "ArcForges.Native.Image" or "ArcForges.Native.Abstractions" or "ArcForges.Native.Image.Runtime.win-x64" or "ArcForges.Capabilities" or "ArcForges.Persistence.Sqlite" or "ArcForges.Security" or "ArcForges.Security.CapabilityEnforcement" or "ArcForges.Security.Audit", "Forbidden dependency licence.");
             Require(Convert.FromBase64String(Text(entry, "contentHash")).Length == 64, "Invalid lock integrity.");
             Require(Sha40().IsMatch(Text(entry, "sourceCommit")) && Sha256().IsMatch(Text(entry, "nuspecSha256")), "Floating source tag or missing exact source evidence.");
             Require(Uri.TryCreate(Text(entry, "sourceRepository"), UriKind.Absolute, out var source) && source.Scheme == "https", "Untrusted source location.");

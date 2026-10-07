@@ -12,7 +12,8 @@
       "kind": "contracts",
       "sources": [
         "packages/contracts/source.json"
-      ]
+      ],
+      "producerReport": "packages/contracts/build-identity.json"
     },
     "CapabilityVersion": {
       "kind": "declarations",

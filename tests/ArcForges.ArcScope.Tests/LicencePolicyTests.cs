@@ -64,6 +64,41 @@ public sealed class LicencePolicyTests
         Assert.Throws<InvalidOperationException>(() => fixture.Validate());
     }
 
+    [Theory]
+    [InlineData("ArcForges.Capabilities")]
+    [InlineData("ArcForges.Persistence.Sqlite")]
+    [InlineData("ArcForges.Security")]
+    [InlineData("ArcForges.Security.CapabilityEnforcement")]
+    [InlineData("ArcForges.Security.Audit")]
+    [InlineData("ArcForges.Contracts.LocalRpc.Platform")]
+    [InlineData("ArcForges.Sdk.Contracts")]
+    public void ActualReviewedProducerIdentityPassesWithoutAdmittingAdjacentPackages(string name)
+    {
+        using var fixture = new Fixture();
+        void Set(string id) => fixture.Write("packages.lock.json", JsonSerializer.Serialize(new
+        {
+            dependencies = new { net10 = new Dictionary<string, object> { [id] = new { type = "Transitive" } } }
+        }));
+        Set(name);
+        Assert.Single(fixture.Validate());
+        Set(name + ".Unreviewed");
+        Assert.Throws<InvalidOperationException>(() => fixture.Validate());
+    }
+
+    [Theory]
+    [InlineData("ArcForges.Contracts.CloudInternal")]
+    [InlineData("ArcForges.Assistant.Private")]
+    [InlineData("ArcForges.Foreign.Security")]
+    public void ProducerAdmissionRetainsPrivateAndForeignRefusal(string name)
+    {
+        using var fixture = new Fixture();
+        fixture.Write("packages.lock.json", JsonSerializer.Serialize(new
+        {
+            dependencies = new { net10 = new Dictionary<string, object> { [name] = new { type = "Transitive" } } }
+        }));
+        Assert.Throws<InvalidOperationException>(() => fixture.Validate());
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string _root = Path.Combine(Path.GetTempPath(), "licence-policy-" + Guid.NewGuid());

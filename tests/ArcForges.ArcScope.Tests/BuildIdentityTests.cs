@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using ArcForges.ArcScope.Core;
@@ -136,5 +137,105 @@ public sealed class BuildIdentityTests
         BuildIdentity.ValidateBuild(local);
         local["runAttempt"] = 0;
         Assert.Throws<InvalidOperationException>(() => BuildIdentity.ValidateBuild(local));
+    }
+
+    [Fact]
+    public void ActualRestored324SchemasAndDescriptorProduceCompleteIndependentContractSet()
+    {
+        var (catalog, sources) = ActualContracts();
+        var axes = BuildIdentity.Resolve(catalog, path => sources[path]);
+        var values = axes["ContractSet"]!["values"]!.AsArray();
+        Assert.Equal(10, values.Count);
+        Assert.All(values, value => Assert.Equal("1", value!["version"]!.GetValue<string>()));
+        Assert.Contains(values, value => value!["subject"]!.GetValue<string>() == "json:BrowserSession");
+        var publicApi = Assert.Single(values, value => value!["subject"]!.GetValue<string>() == "arcforges.publicapi")!;
+        Assert.Null(publicApi["source"]);
+        Assert.Equal(13, publicApi["sources"]!.AsArray().Count);
+        Assert.Equal(22, values.Sum(value => value!["sources"]?.AsArray().Count ?? 1));
+        Assert.Contains(axes["PackageVersion"]!["values"]!.AsArray(), value =>
+            value!["subject"]!.GetValue<string>().StartsWith("pkg:nuget/ArcForges.Contracts.PublicApi?", StringComparison.Ordinal)
+            && value["version"]!.GetValue<string>() == "1.0.0-ci.324.1");
+    }
+
+    [Theory]
+    [InlineData("dirty")]
+    [InlineData("foreign")]
+    [InlineData("artifact")]
+    [InlineData("version")]
+    [InlineData("commit")]
+    [InlineData("descriptor")]
+    [InlineData("schema-bytes")]
+    [InlineData("semantic-version")]
+    [InlineData("subject")]
+    [InlineData("omitted")]
+    [InlineData("duplicate")]
+    [InlineData("reordered")]
+    [InlineData("extra-source")]
+    [InlineData("private-source")]
+    [InlineData("unknown-profile")]
+    [InlineData("missing-report")]
+    public void ActualProducerTamperingCannotBecomeContractIdentity(string change)
+    {
+        var (catalog, sources) = ActualContracts();
+        const string provenanceKey = "packages/contracts/source.json";
+        const string reportKey = "packages/contracts/build-identity.json";
+        var provenance = JsonNode.Parse(sources[provenanceKey])!.AsObject();
+        var report = JsonNode.Parse(sources[reportKey])!.AsObject();
+        var values = report["axes"]!["ContractSet"]!["values"]!.AsArray();
+        string schemaPath = provenance["schemaSources"]!.AsObject().First().Key;
+        switch (change)
+        {
+            case "dirty": report["build"]!["dirty"] = true; break;
+            case "foreign": report["owner"] = "Foreign"; break;
+            case "artifact": report["artifact"]!["id"] = "ArcForges.Contracts.CloudInternal"; break;
+            case "version": report["artifact"]!["version"] = "1.0.0-ci.999.1"; break;
+            case "commit": report["build"]!["sourceCommit"] = new string('a', 40); break;
+            case "descriptor": sources["packages/contracts/descriptor.base64"] = Convert.ToBase64String([1, 2, 3]); break;
+            case "schema-bytes": sources["packages/contracts/schema/" + schemaPath] += " "; break;
+            case "semantic-version": values[0]!["version"] = "324"; break;
+            case "subject": values[0]!["subject"] = "invented.namespace"; break;
+            case "omitted": values.RemoveAt(0); break;
+            case "duplicate": values.Add(values[0]!.DeepClone()); break;
+            case "reordered": var first = values[0]!.DeepClone(); values.RemoveAt(0); values.Add(first); break;
+            case "extra-source": provenance["schemaSources"]!["public/proto/foreign/v1/foreign.proto"] = new string('a', 64); break;
+            case "private-source": provenance["schemaSources"]!["../private.proto"] = new string('a', 64); break;
+            case "unknown-profile": provenance["invented"] = true; break;
+            case "missing-report": catalog["axes"]!["ContractSet"]!.AsObject().Remove("producerReport"); break;
+        }
+        sources[provenanceKey] = provenance.ToJsonString();
+        sources[reportKey] = report.ToJsonString();
+        Assert.Throws<InvalidOperationException>(() => BuildIdentity.Resolve(catalog, path =>
+            sources.TryGetValue(path, out var source) ? source : throw new InvalidOperationException("Required producer source missing.")));
+    }
+
+    [Fact]
+    public void ActualCompiledPublicProducerResourcesMatchIndependentRestoredPackageReader()
+    {
+        var root = Root();
+        string executable = Path.Combine(root, "src/ArcForges.ArcScope/bin/Release/net10.0/ArcScope.dll");
+        var actual = BuildIdentity.FromAssembly(Assembly.LoadFrom(executable));
+        var expected = IdentityEvidence.ExpectedReport(root, actual["artifact"]!["version"]!.GetValue<string>(),
+            IdentityEvidence.Git(root, "rev-parse", "HEAD"));
+        Assert.True(JsonNode.DeepEquals(expected["axes"], actual["axes"]));
+    }
+
+    private static (JsonObject Catalog, Dictionary<string, string> Sources) ActualContracts()
+    {
+        var root = Root();
+        var catalog = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "eng/version-sources.json")))!.AsObject();
+        var assets = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "eng/ArcForges.Repository/obj/project.assets.json")))!;
+        string package = assets["packageFolders"]!.AsObject().Select(folder => Path.Combine(folder.Key,
+            "arcforges.contracts.publicapi", "1.0.0-ci.324.1")).Single(path => File.Exists(Path.Combine(path, "source.json")));
+        var sources = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["assembly/release.json"] = """{"versions":[{"subject":"ArcScope","version":"0.1.0"}]}""",
+            ["packages/contracts/source.json"] = File.ReadAllText(Path.Combine(package, "source.json")),
+            ["packages/contracts/build-identity.json"] = File.ReadAllText(Path.Combine(package, "build-identity.json")),
+            ["packages/contracts/descriptor.base64"] = Convert.ToBase64String(File.ReadAllBytes(Path.Combine(package, "contracts.binpb"))),
+            ["src/ArcForges.ArcScope/packages.lock.json"] = File.ReadAllText(Path.Combine(root, "src/ArcForges.ArcScope/packages.lock.json"))
+        };
+        foreach (var source in JsonNode.Parse(sources["packages/contracts/source.json"])!["schemaSources"]!.AsObject())
+            sources.Add("packages/contracts/schema/" + source.Key, File.ReadAllText(Path.Combine(package, "schemas", source.Key)));
+        return (catalog, sources);
     }
 }

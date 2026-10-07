@@ -54,11 +54,15 @@ public static class IdentityEvidence
         var assets = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "eng/ArcForges.Repository/obj/project.assets.json")))!;
         var contractsPath = assets["packageFolders"]!.AsObject().Select(p => Path.Combine(p.Key, "arcforges.contracts.publicapi", contractsVersion, "source.json")).Single(File.Exists);
         var contracts = File.ReadAllText(contractsPath);
+        var contractsRoot = Path.GetDirectoryName(contractsPath)!;
         if (JsonNode.Parse(contracts)!["version"]!.GetValue<string>() != contractsVersion) throw new InvalidOperationException("Restored Contracts identity differs from central pin.");
         string Read(string path) => path switch
         {
             "assembly/release.json" => new JsonObject { ["versions"] = new JsonArray(new JsonObject { ["subject"] = "ArcScope", ["version"] = version }) }.ToJsonString(),
             "packages/contracts/source.json" => contracts,
+            "packages/contracts/build-identity.json" => File.ReadAllText(Path.Combine(contractsRoot, "build-identity.json")),
+            "packages/contracts/descriptor.base64" => Convert.ToBase64String(File.ReadAllBytes(Path.Combine(contractsRoot, "contracts.binpb"))),
+            _ when path.StartsWith("packages/contracts/schema/", StringComparison.Ordinal) => File.ReadAllText(Path.Combine(contractsRoot, "schemas", path["packages/contracts/schema/".Length..])),
             _ => File.ReadAllText(Path.Combine(root, path))
         };
         return new JsonObject
