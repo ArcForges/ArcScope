@@ -8,6 +8,10 @@
     <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Web" />
+    <!-- APP.02 part-A closure roots (S53(2), S56(2)); the annotation tests use these packages directly. -->
+    <PackageReference Include="ArcForges.Assistant.Abstractions" />
+    <PackageReference Include="ArcForges.Capabilities" />
+    <PackageReference Include="ArcForges.Persistence.Sqlite" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <ProjectReference Include="../../eng/ArcForges.Repository/ArcForges.Repository.csproj" />

@@ -10,7 +10,8 @@ public static class LicencePolicy
     private static readonly HashSet<string> FirstPartyPackages = new(StringComparer.OrdinalIgnoreCase)
     {
         "ArcForges.Build.Policy", "ArcForges.Contracts.PublicApi",
-        "ArcForges.Foundation", "ArcForges.Application.Abstractions", "ArcForges.Native.Image", "ArcForges.Native.Abstractions", "ArcForges.Native.Image.Runtime.win-x64", "ArcForges.Contracts.Foundation", "ArcForges.Contracts.LocalRpc.Scope"
+        "ArcForges.Foundation", "ArcForges.Application.Abstractions", "ArcForges.Native.Image", "ArcForges.Native.Abstractions", "ArcForges.Native.Image.Runtime.win-x64", "ArcForges.Contracts.Foundation", "ArcForges.Contracts.LocalRpc.Scope",
+        "ArcForges.Assistant.Abstractions", "ArcForges.Capabilities", "ArcForges.Persistence.Sqlite", "ArcForges.Sdk.Contracts"
     };
 
     public static string[] Validate(string root, IEnumerable<string> inventory)

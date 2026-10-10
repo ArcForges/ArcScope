@@ -23,4 +23,23 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
   </ItemGroup>
+  <!-- APP.02 (S53(2), amended by S56(2)): only the annotation Application, Infrastructure and test projects consume this
+       exact closure. Contracts stay at 1.0.0-ci.216.1, the exact pins of the DesktopPlatform 1.0.0-ci.130.1 packages.
+       The executable and Core keep the pins above until APP.03. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'ArcForges.ArcScope.Application' Or '$(MSBuildProjectName)' == 'ArcForges.ArcScope.Infrastructure' Or '$(MSBuildProjectName)' == 'ArcForges.ArcScope.Tests'">
+    <PackageVersion Update="ArcForges.Foundation" Version="1.0.0-ci.130.1" />
+    <PackageVersion Update="ArcForges.Application.Abstractions" Version="1.0.0-ci.130.1" />
+    <PackageVersion Include="ArcForges.Assistant.Abstractions" Version="1.0.0-ci.130.1" />
+    <PackageVersion Include="ArcForges.Capabilities" Version="1.0.0-ci.130.1" />
+    <PackageVersion Include="ArcForges.Persistence.Sqlite" Version="1.0.0-ci.130.1" />
+    <PackageVersion Include="ArcForges.Sdk.Contracts" Version="1.0.0-ci.216.1" />
+    <PackageVersion Update="ArcForges.Contracts.Foundation" Version="1.0.0-ci.216.1" />
+    <PackageVersion Update="ArcForges.Contracts.PublicApi" Version="1.0.0-ci.216.1" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.12" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.core" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
 </Project>
