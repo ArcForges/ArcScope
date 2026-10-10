@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- APP.02: ArcScope's product SQLite adapters. Canonical annotation content, its content origin, journal and durable
+       command receipts commit through the shared store mechanism (ArcForges.Persistence.Sqlite); ArcScope owns its
+       numbered schema (embedded Storage/Migrations/*.sql), the session-target catalog and the derived session index. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ArcForges.Foundation" />
+    <PackageReference Include="ArcForges.Contracts.Foundation" />
+    <PackageReference Include="ArcForges.Persistence.Sqlite" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="SQLitePCLRaw.core" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- One logical name per file, independent of the directory enumeration order MSBuild sees; the loader sorts ordinally. -->
+    <EmbeddedResource Include="Storage/Migrations/*.sql" LogicalName="ArcForges.ArcScope.Infrastructure.Storage.Migrations.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The tests reach the fault-injection seam and the product-connection guard; production code never does. -->
+    <InternalsVisibleTo Include="ArcForges.ArcScope.Tests" />
+  </ItemGroup>
+  <PropertyGroup>
+    <LicenceBoundary>AGPL</LicenceBoundary>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+</Project>

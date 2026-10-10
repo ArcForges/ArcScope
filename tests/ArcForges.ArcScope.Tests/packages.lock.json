@@ -243,6 +243,17 @@
       "arcforges.arcscope.domain": {
         "type": "Project"
       },
+      "arcforges.arcscope.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "ArcForges.ArcScope.Application": "[1.0.0, )",
+          "ArcForges.Contracts.Foundation": "[1.0.0-ci.216.1, )",
+          "ArcForges.Foundation": "[1.0.0-ci.130.1, )",
+          "ArcForges.Persistence.Sqlite": "[1.0.0-ci.130.1, )",
+          "Microsoft.Data.Sqlite": "[10.0.12, )",
+          "SQLitePCLRaw.core": "[2.1.12, )"
+        }
+      },
       "arcforges.repository": {
         "type": "Project",
         "dependencies": {

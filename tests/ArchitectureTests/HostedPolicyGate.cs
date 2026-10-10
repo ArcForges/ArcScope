@@ -34,10 +34,14 @@ internal static class HostedPolicyGate
     // from the AOT executable must declare the property and flip the classification (RP-07 then covers it).
     // - Application (APP.02) holds the ArcScope use cases and ports: the annotation model, commands, queries and the single
     //   annotation write path. It declares IsAotCompatible and references no project, only the foundation packages below.
+    // - Infrastructure (APP.02) holds ArcScope's product SQLite adapters: the annotation store over the shared store mechanism,
+    //   the numbered schema migrations, the session-target catalog and the derived session index. It references Application
+    //   and declares IsAotCompatible; the executable composes it in a later task.
     internal static readonly IReadOnlyList<ProjectClassification> Classifications =
     [
         new("src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj", ProjectRole.Domain, "ArcScope", Production: true, Aot: false),
         new("src/ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj", ProjectRole.Application, "ArcScope", Production: true, Aot: true),
+        new("src/ArcForges.ArcScope.Infrastructure/ArcForges.ArcScope.Infrastructure.csproj", ProjectRole.Infrastructure, "ArcScope", Production: true, Aot: true),
         new("src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj", ProjectRole.Infrastructure, "ArcScope", Production: true, Aot: true),
         new("src/ArcForges.ArcScope/ArcForges.ArcScope.csproj", ProjectRole.UserInterface, "ArcScope", Production: true, Aot: true),
         new("tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj", ProjectRole.Test, "ArcScope", Production: false, Aot: false),

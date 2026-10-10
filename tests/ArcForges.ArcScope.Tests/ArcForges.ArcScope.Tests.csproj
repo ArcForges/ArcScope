@@ -14,6 +14,7 @@
     <PackageReference Include="ArcForges.Persistence.Sqlite" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj" />
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Infrastructure/ArcForges.ArcScope.Infrastructure.csproj" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <ProjectReference Include="../../eng/ArcForges.Repository/ArcForges.Repository.csproj" />
   </ItemGroup>

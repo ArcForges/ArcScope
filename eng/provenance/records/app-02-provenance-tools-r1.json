@@ -155,7 +155,7 @@
     },
     {
       "path": "eng/policy/dependency-review.json",
-      "sha256": "dc572bb2cc9aace404f103f65e02d6d9db6d69be3060da5333754ea196420d04",
+      "sha256": "c5123627278c4b5be4ceb6cb26ad72c2f560082fa4ffd923df1407bfd65be0da",
       "normalization": "lf"
     }
   ],
