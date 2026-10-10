@@ -225,6 +225,13 @@
           "xunit.v3.runner.common": "[4.0.1]"
         }
       },
+      "arcforges.arcscope.application": {
+        "type": "Project",
+        "dependencies": {
+          "ArcForges.Contracts.Foundation": "[1.0.0-ci.216.1, )",
+          "ArcForges.Foundation": "[1.0.0-ci.130.1, )"
+        }
+      },
       "arcforges.arcscope.core": {
         "type": "Project",
         "dependencies": {

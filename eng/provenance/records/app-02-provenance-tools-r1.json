@@ -155,7 +155,7 @@
     },
     {
       "path": "eng/policy/dependency-review.json",
-      "sha256": "b67e167cdf1ad74a1f2f5eb0e48028c6a215f9aba84786aaf880be9e56b3fc51",
+      "sha256": "dc572bb2cc9aace404f103f65e02d6d9db6d69be3060da5333754ea196420d04",
       "normalization": "lf"
     }
   ],
@@ -164,7 +164,7 @@
   "verification": {
     "kind": "transformation",
     "command": "dotnet restore ArcScope.slnx --locked-mode; build the solution and execute the existing ArcForges.ArcScope.Tests suite; dotnet run --project eng/ArcForges.Repository -c Release --no-build -- check",
-    "expected": "The annotation selector rows apply only to the annotation Application, Infrastructure and test projects; the only lock that changes is the test project's; every new coordinate is admitted with its exact contentHash, nuspec SHA-256, licence and source commit; a floating or unadmitted selector Update row is refused; the existing suite, including the Core Hello client against PublicApi 1.0.0-ci.216.1, passes.",
+    "expected": "The annotation selector rows apply only to the annotation Application, Infrastructure and test projects; the executable, Core, Domain, repository-tool and architecture-host locks are unchanged and the annotation projects carry their own locks; every new coordinate is admitted with its exact contentHash, nuspec SHA-256, licence and source commit; a floating or unadmitted selector Update row is refused; the existing suite, including the Core Hello client against PublicApi 1.0.0-ci.216.1, passes.",
     "artifacts": []
   },
   "notice": {

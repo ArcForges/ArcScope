@@ -32,9 +32,12 @@ internal static class HostedPolicyGate
     // banned API; the engine still audits its arguments, and any other invocation it cannot resolve still fails the scan.
     // Domain is not classified AOT because its project does not yet declare IsAotCompatible; the task that references it
     // from the AOT executable must declare the property and flip the classification (RP-07 then covers it).
+    // - Application (APP.02) holds the ArcScope use cases and ports: the annotation model, commands, queries and the single
+    //   annotation write path. It declares IsAotCompatible and references no project, only the foundation packages below.
     internal static readonly IReadOnlyList<ProjectClassification> Classifications =
     [
         new("src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj", ProjectRole.Domain, "ArcScope", Production: true, Aot: false),
+        new("src/ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj", ProjectRole.Application, "ArcScope", Production: true, Aot: true),
         new("src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj", ProjectRole.Infrastructure, "ArcScope", Production: true, Aot: true),
         new("src/ArcForges.ArcScope/ArcForges.ArcScope.csproj", ProjectRole.UserInterface, "ArcScope", Production: true, Aot: true),
         new("tests/ArcForges.ArcScope.Tests/ArcForges.ArcScope.Tests.csproj", ProjectRole.Test, "ArcScope", Production: false, Aot: false),
@@ -44,9 +47,18 @@ internal static class HostedPolicyGate
 
     // The build-only policy package is the one package every project receives. It ships no runtime assembly, so for the
     // layered projects it is classified with the foundation packages that Domain may use.
+    // The Application project's locked closure (APP.02) is the shared foundation: ArcForges.Foundation (typed failures, clock,
+    // revisions), the Contracts.Foundation wire value identities it is built on, and Google.Protobuf, the message runtime of
+    // those value types. None of them carries transport, persistence or UI, so they are Foundation for the layer rules.
+    // Microsoft.NET.ILLink.Tasks is the SDK's build-only trimming task package that IsAotCompatible references implicitly;
+    // like the policy package it ships no runtime assembly.
     internal static readonly IReadOnlyDictionary<string, ProjectRole> DependencyRoles = new Dictionary<string, ProjectRole>(StringComparer.OrdinalIgnoreCase)
     {
         ["ArcForges.Build.Policy"] = ProjectRole.Foundation,
+        ["ArcForges.Foundation"] = ProjectRole.Foundation,
+        ["ArcForges.Contracts.Foundation"] = ProjectRole.Foundation,
+        ["Google.Protobuf"] = ProjectRole.Foundation,
+        ["Microsoft.NET.ILLink.Tasks"] = ProjectRole.Foundation,
     };
 
     public static void Run(Action<PolicyGateStage> setStage)
