@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "ArcForges.Build.Policy": {
+        "type": "Direct",
+        "requested": "[1.0.0-ci.100.1, )",
+        "resolved": "1.0.0-ci.100.1",
+        "contentHash": "gwnkSdJsIKHUQe/5BYLFIXZLQuxAXd6est4kfQa4K77YSgVspaHwxfpD77Cn4lA+izEZ86eUYOExyNpwznlA+Q=="
+      },
+      "ArcForges.Contracts.Foundation": {
+        "type": "Direct",
+        "requested": "[1.0.0-ci.216.1, )",
+        "resolved": "1.0.0-ci.216.1",
+        "contentHash": "+RGxNiaoOBt+j2IOSpUa2WWD4Bnkk8Ten7jbOVFwdUVF8jUQRCCvAGhrPTzZpnr6Sk5MSoA95+pJYgN8T+jEtg==",
+        "dependencies": {
+          "Google.Protobuf": "3.36.1"
+        }
+      },
+      "ArcForges.Foundation": {
+        "type": "Direct",
+        "requested": "[1.0.0-ci.130.1, )",
+        "resolved": "1.0.0-ci.130.1",
+        "contentHash": "dftRndItmQSkAGFKsTfuXCHXdyCrxqMEnnalBGEjij9YxKg5Vmq2UR9tOe6/LGx779YobYdySyEcFBHjf4j6Aw==",
+        "dependencies": {
+          "ArcForges.Contracts.Foundation": "[1.0.0-ci.216.1]"
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "xi+BDjFpW+Sb+MHFHaH6Y/gV9I8BluFwRXc1QyCdoZbIK26eNiBeFuMTe/FMwc33G1wdHCyDg7CVTmb8OdQrMQ=="
+      },
+      "Google.Protobuf": {
+        "type": "Transitive",
+        "resolved": "3.36.1",
+        "contentHash": "77AqPEoaY1ODE+syYBHti0jXiwQq0J/fUr/fRyYhNlc9oKtH5dZZEr/OLKtdKNVG83PRnCYB2r8B80ZrObzOGQ=="
+      }
+    }
+  }
+}

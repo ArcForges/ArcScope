@@ -8,7 +8,15 @@
     <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Web" />
+    <!-- APP.02 part-A closure roots (S53(2), S56(2)). The storage tests use ArcForges.Persistence.Sqlite directly. No APP.02
+         code uses ArcForges.Assistant.Abstractions or ArcForges.Capabilities: they stay as roots of the admitted closure that
+         the own-app capability binding and its tests consume, which S59(5) moved to APP.03. -->
+    <PackageReference Include="ArcForges.Assistant.Abstractions" />
+    <PackageReference Include="ArcForges.Capabilities" />
+    <PackageReference Include="ArcForges.Persistence.Sqlite" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Domain/ArcForges.ArcScope.Domain.csproj" />
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj" />
+    <ProjectReference Include="../../src/ArcForges.ArcScope.Infrastructure/ArcForges.ArcScope.Infrastructure.csproj" />
     <ProjectReference Include="../../src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj" />
     <ProjectReference Include="../../eng/ArcForges.Repository/ArcForges.Repository.csproj" />
   </ItemGroup>

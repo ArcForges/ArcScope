@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- APP.02: ArcScope use cases and ports. It depends only on the shared foundation (typed failures, clock, wire value
+       identities); persistence, transport and UI stay in Infrastructure and the executable. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ArcForges.Foundation" />
+    <PackageReference Include="ArcForges.Contracts.Foundation" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The tests drive the store contract with commits directly; production code reaches commits only through the write path. -->
+    <InternalsVisibleTo Include="ArcForges.ArcScope.Tests" />
+  </ItemGroup>
+  <PropertyGroup>
+    <LicenceBoundary>AGPL</LicenceBoundary>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+  </PropertyGroup>
+</Project>

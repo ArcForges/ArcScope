@@ -13,6 +13,14 @@
       "kind": "msbuild"
     },
     {
+      "path": "src/ArcForges.ArcScope.Application/ArcForges.ArcScope.Application.csproj",
+      "kind": "msbuild"
+    },
+    {
+      "path": "src/ArcForges.ArcScope.Infrastructure/ArcForges.ArcScope.Infrastructure.csproj",
+      "kind": "msbuild"
+    },
+    {
       "path": "src/ArcForges.ArcScope.Core/ArcForges.ArcScope.Core.csproj",
       "kind": "msbuild"
     },

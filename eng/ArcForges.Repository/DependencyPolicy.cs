@@ -19,9 +19,13 @@ public static partial class DependencyPolicy
         ["ArcForges.Native.Image"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Native.Abstractions"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Native.Image.Runtime.win-x64"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Assistant.Abstractions"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Capabilities"] = "https://github.com/ArcForges/DesktopPlatform",
+        ["ArcForges.Persistence.Sqlite"] = "https://github.com/ArcForges/DesktopPlatform",
         ["ArcForges.Contracts.Foundation"] = "https://github.com/ArcForges/Contracts",
         ["ArcForges.Contracts.LocalRpc.Scope"] = "https://github.com/ArcForges/Contracts",
-        ["ArcForges.Contracts.PublicApi"] = "https://github.com/ArcForges/Contracts"
+        ["ArcForges.Contracts.PublicApi"] = "https://github.com/ArcForges/Contracts",
+        ["ArcForges.Sdk.Contracts"] = "https://github.com/ArcForges/Contracts"
     };
 
     // Historical Git snapshots retain every admitted coordinate, including removed dependencies.
@@ -79,7 +83,7 @@ public static partial class DependencyPolicy
             Require(ExactVersion().IsMatch(version), "Floating dependency version.");
             Require(admitted.TryAdd(id + "/" + version, entry), "Duplicate dependency admission.");
             var licence = Text(entry, "licence");
-            Require(licence is "MIT" or "Apache-2.0" or "BSD-3-Clause" || licence == "AGPL-3.0-only" && id is "ArcForges.Build.Policy" or "ArcForges.Foundation" or "ArcForges.Application.Abstractions" or "ArcForges.Native.Image" or "ArcForges.Native.Abstractions" or "ArcForges.Native.Image.Runtime.win-x64", "Forbidden dependency licence.");
+            Require(licence is "MIT" or "Apache-2.0" or "BSD-3-Clause" || licence == "AGPL-3.0-only" && id is "ArcForges.Build.Policy" or "ArcForges.Foundation" or "ArcForges.Application.Abstractions" or "ArcForges.Native.Image" or "ArcForges.Native.Abstractions" or "ArcForges.Native.Image.Runtime.win-x64" or "ArcForges.Assistant.Abstractions" or "ArcForges.Capabilities" or "ArcForges.Persistence.Sqlite", "Forbidden dependency licence.");
             Require(Convert.FromBase64String(Text(entry, "contentHash")).Length == 64, "Invalid lock integrity.");
             Require(Sha40().IsMatch(Text(entry, "sourceCommit")) && Sha256().IsMatch(Text(entry, "nuspecSha256")), "Floating source tag or missing exact source evidence.");
             Require(Uri.TryCreate(Text(entry, "sourceRepository"), UriKind.Absolute, out var source) && source.Scheme == "https", "Untrusted source location.");
@@ -117,7 +121,8 @@ public static partial class DependencyPolicy
             {
                 if (element.Name.LocalName == "PackageVersion")
                 {
-                    var id = (string?)element.Attribute("Include") ?? "";
+                    // A conditional selector row (Update) pins its projects exactly like a central Include row.
+                    var id = (string?)element.Attribute("Include") ?? (string?)element.Attribute("Update") ?? "";
                     var version = (string?)element.Attribute("Version") ?? "";
                     Require(ExactVersion().IsMatch(version) && admitted.ContainsKey(id + "/" + version), "Floating or unadmitted central dependency.");
                 }

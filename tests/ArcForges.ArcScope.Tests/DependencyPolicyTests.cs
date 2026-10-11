@@ -40,6 +40,45 @@ public sealed class DependencyPolicyTests
     }
 
     [Fact]
+    public void AdmittedSelectorUpdateRowsPass()
+    {
+        using var fixture = new Fixture();
+        var pins = File.ReadAllText(Path.Combine(fixture.Root, "Directory.Packages.props"));
+        Assert.Contains("<PackageVersion Update=\"ArcForges.Contracts.PublicApi\" Version=\"1.0.0-ci.216.1\" />", pins, StringComparison.Ordinal);
+        Assert.Contains("<PackageVersion Update=\"ArcForges.Foundation\" Version=\"1.0.0-ci.130.1\" />", pins, StringComparison.Ordinal);
+        fixture.Check();
+    }
+
+    [Theory]
+    [InlineData("<PackageVersion Update=\"ArcForges.Contracts.PublicApi\" Version=\"1.0.0-ci.216.1\" />", "<PackageVersion Update=\"ArcForges.Contracts.PublicApi\" Version=\"1.0.*\" />")]
+    [InlineData("<PackageVersion Update=\"ArcForges.Contracts.PublicApi\" Version=\"1.0.0-ci.216.1\" />", "<PackageVersion Update=\"ArcForges.Contracts.PublicApi\" Version=\"[1.0.0-ci.216.1,)\" />")]
+    [InlineData("<PackageVersion Update=\"ArcForges.Foundation\" Version=\"1.0.0-ci.130.1\" />", "<PackageVersion Update=\"ArcForges.Foundation\" Version=\"1.0.0-ci.131.1\" />")]
+    [InlineData("<PackageVersion Update=\"ArcForges.Foundation\" Version=\"1.0.0-ci.130.1\" />", "<PackageVersion Update=\"ArcForges.Unreviewed\" Version=\"1.0.0-ci.130.1\" />")]
+    [InlineData("<PackageVersion Update=\"ArcForges.Foundation\" Version=\"1.0.0-ci.130.1\" />", "<PackageVersion Update=\"ArcForges.Foundation\" />")]
+    public void RefusesFloatingOrUnadmittedSelectorUpdateRows(string admitted, string replacement)
+    {
+        using var fixture = new Fixture();
+        var pins = Path.Combine(fixture.Root, "Directory.Packages.props");
+        var original = File.ReadAllText(pins);
+        Assert.Contains(admitted, original, StringComparison.Ordinal);
+        File.WriteAllText(pins, original.Replace(admitted, replacement, StringComparison.Ordinal));
+        Assert.Contains("Floating or unadmitted central dependency", Assert.Throws<InvalidOperationException>(fixture.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SelectorUpdateRowCannotPinAnotherAdmittedVersionOfADifferentPackage()
+    {
+        // The id and the version are admitted together: an admitted version under another package id is still refused.
+        using var fixture = new Fixture();
+        var pins = Path.Combine(fixture.Root, "Directory.Packages.props");
+        var original = File.ReadAllText(pins);
+        const string admitted = "<PackageVersion Update=\"ArcForges.Application.Abstractions\" Version=\"1.0.0-ci.130.1\" />";
+        Assert.Contains(admitted, original, StringComparison.Ordinal);
+        File.WriteAllText(pins, original.Replace(admitted, "<PackageVersion Update=\"ArcForges.Application.Abstractions\" Version=\"1.0.0-ci.216.1\" />", StringComparison.Ordinal));
+        Assert.Contains("Floating or unadmitted central dependency", Assert.Throws<InvalidOperationException>(fixture.Check).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RejectsSameVersionWithChangedBytes()
     {
         using var fixture = new Fixture();

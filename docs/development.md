@@ -12,6 +12,8 @@ No service token, `.env` file or Cloudflare account is needed to consume public 
 ## Structure
 
 - `src/ArcForges.ArcScope.Core`: owned published gRPC client and observable request state.
+- `src/ArcForges.ArcScope.Application`: annotation use cases and ports. It has typed read, create and append handlers with command input validation, the presentation-agnostic command surface, and `AnnotationWritePath`, the single path for every annotation mutation.
+- `src/ArcForges.ArcScope.Infrastructure`: the ArcScope SQLite store. It has numbered embedded migrations applied in ordinal order, the annotation store and the session-target catalog over `ArcForges.Persistence.Sqlite`. The executable does not compose it yet. APP.03 adds the composition and the own-app capability route.
 - `src/ArcForges.ArcScope`: native Avalonia window with typed C# event wiring and explicit Generic Host lifetime. No reflection binding, dynamic XAML or WebView.
 - `tests/ArcForges.ArcScope.Tests`: deterministic loopback gRPC-Web, deadline/cancellation, UI state and release-integrity tests.
 - `eng/ArcForges.Repository`: repository checks, local hooks, CI version, stage/smoke/pack and release verification.
