@@ -140,7 +140,7 @@
     },
     {
       "path": "docs/dependency-policy.md",
-      "sha256": "add516bb0b78b62eb4d009effd2f3f328c44f4ac0474bf7d4682bcb497081d64",
+      "sha256": "2f9b5ddc1134ee57f908f681ad5308f9b89a84d5e947cdaee5ab1793f36b324f",
       "normalization": "lf"
     },
     {
@@ -155,7 +155,7 @@
     },
     {
       "path": "eng/policy/dependency-review.json",
-      "sha256": "c5123627278c4b5be4ceb6cb26ad72c2f560082fa4ffd923df1407bfd65be0da",
+      "sha256": "6aca38de6a2e9262cd0627304e70ca44b12c706bee9b3e5a3aca44654a5ce8b8",
       "normalization": "lf"
     }
   ],
@@ -188,9 +188,9 @@
   "review": {
     "owner": "Licensing and Provenance Owner",
     "reviewer": "w-deku-20261010-rev-app-02",
-    "reviewedOn": "2026-10-10",
+    "reviewedOn": "2026-10-11",
     "decision": "approved",
-    "rationale": "APP.02 part A admits the approved annotation closure (brief S53(2), amended by S56(2)) and extends the dependency checker so selector Update rows are validated like Include rows (S56(3)). The record rebinds only the changed dependency inputs against the same ArcNotes origin; no other dependency or closure changes.",
+    "rationale": "APP.02 part A admits the approved annotation closure (brief S53(2), amended by S56(2)) and extends the dependency checker so selector Update rows are validated like Include rows (S56(3)). The record rebinds only the changed dependency inputs against the same ArcNotes origin; no other dependency or closure changes. The closing unit rebinds docs/dependency-policy.md and the resealed dependency review after factual lines record that the own-app capability route and its closure roots belong to APP.03 (S59(5)).",
     "baselineCommit": "b0ff5cd18fb0ffbbaf1bd8b7b67cb7304e6ba794",
     "reconciliation": false
   },
