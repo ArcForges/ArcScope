@@ -21,7 +21,7 @@
     <PackageVersion Include="Grpc.AspNetCore" Version="2.83.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.84.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.2" />
   </ItemGroup>
   <!-- APP.02 (S53(2), amended by S56(2)): only the annotation Application, Infrastructure and test projects consume this
        exact closure. Contracts stay at 1.0.0-ci.216.1, the exact pins of the DesktopPlatform 1.0.0-ci.130.1 packages.
