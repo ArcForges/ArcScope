@@ -20,7 +20,7 @@
     <PackageVersion Include="Grpc.Net.Client.Web" Version="2.84.0" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.83.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.84.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
   </ItemGroup>
   <!-- APP.02 (S53(2), amended by S56(2)): only the annotation Application, Infrastructure and test projects consume this
